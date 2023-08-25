@@ -17,18 +17,6 @@
 # It makes things clear and robust.
 #
 {lib, ...}:
-let
-  # OPA flag configuration
-  defaultFlags = " -trimpath -buildmode=pie -mod=readonly -tags=netgo";
-  linkerFlags = "-w -s -linkmode=external -extldflags=-fPIE -extldflags=-pie ";
-  makeFlags = "-fstack-protector-all -fcf-protection=full -fstack-clash-protection -DFORTIFY_SOURCE=3";
-  opaConfigSet =  {
-    server = "";
-    net-client = " -tags=disable_all -tags=iptables";
-    http-client = " -tags=disable_all -tags=http";
-    grpc-client = " -tags=disable_all -tags=grpc";
-  };
-in
 {
   nixpkgs.overlays = [
     (_final: prev: {
@@ -91,17 +79,18 @@ in
       });
 
       # Create custom OPA packages
-      opa-server = prev.open-policy-agent.overrideAttrs (prevAttrs: {
-        configureFlags = [ defaultFlags ] ++ [ opaConfigSet.server ];
-        ldflags = linkerFlags;
-        NIX_CFLAGS_COMPILE = makeFlags;
-      });
-
-      opa-client-net = prev.open-policy-agent.overrideAttrs (prevAttrs: {
-        configureFlags = [ defaultFlags ] ++ [ opaConfigSet.net-client ];
-        ldflags = linkerFlags;
-        NIX_CFLAGS_COMPILE = makeFlags;
-      });
+      opa-server =
+        let
+          # OPA flag configuration
+          defaultFlags = " -trimpath -buildmode=pie -mod=readonly -tags=netgo";
+          linkerFlags = "-w -s -linkmode=external -extldflags=-fPIE -extldflags=-pie ";
+          makeFlags = "-fstack-protector-all -fcf-protection=full -fstack-clash-protection -DFORTIFY_SOURCE=3";
+        in
+          prev.open-policy-agent.overrideAttrs (prevAttrs: {
+            configureFlags = [ defaultFlags ];
+            ldflags = linkerFlags;
+            NIX_CFLAGS_COMPILE = makeFlags;
+          });
 
     })
   ];
