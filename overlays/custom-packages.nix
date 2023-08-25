@@ -100,6 +100,21 @@
           sha256 = "sha256-P4y8p4R28j4zp0OX2GspsBKqWvCHqg+nF153LIrRYs8=";
         };
       });
+
+      # Create custom OPA packages
+      opa-server =
+        let
+          # OPA flag configuration
+          defaultFlags = " -trimpath -buildmode=pie -mod=readonly -tags=netgo";
+          linkerFlags = "-w -s -linkmode=external -extldflags=-fPIE -extldflags=-pie ";
+          makeFlags = "-fstack-protector-all -fcf-protection=full -fstack-clash-protection -DFORTIFY_SOURCE=3";
+        in
+          prev.open-policy-agent.overrideAttrs (prevAttrs: {
+            configureFlags = [ defaultFlags ];
+            ldflags = linkerFlags;
+            NIX_CFLAGS_COMPILE = makeFlags;
+          });
+
     })
   ];
 }

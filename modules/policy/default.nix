@@ -35,14 +35,6 @@ in
         };
       };
 
-      systemd.services.opa-client-net = {
-        description = "Ghaf OPA net client.";
-        serviceConfig = {
-          Type = "simple";
-          ExecStart = "${pkgs.opa-client-net}/bin/opa version";
-        };
-      };
-
       environment.systemPackages = with pkgs; [ checksec ];
 
     };
