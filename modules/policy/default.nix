@@ -35,6 +35,18 @@ in
         };
       };
 
+      systemd.services.opa-iptable-client = {
+        description = "Ghaf OPA IP table client.";
+        wantedBy = [ "default.target" ];
+        after = [ "network.target" ];
+        serviceConfig = {
+          Type = "simple";
+          ExecStart = "${pkgs.opa-iptable-client}/bin/opa-iptables --log-level debug";
+          PrivateUsers = true;
+          DynamicUser = true;
+        };
+      };
+
       environment.systemPackages = with pkgs; [ checksec ];
 
     };

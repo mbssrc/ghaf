@@ -1,0 +1,42 @@
+diff --git opa-iptables/main.go opa-iptables/main.go
+index 1dfe3f7..14eb771 100644
+--- opa-iptables/main.go
++++ opa-iptables/main.go
+@@ -76,7 +76,7 @@ func main() {
+ }
+ 
+ func iptablesExists() bool {
+-	if _, err := os.Stat("/sbin/iptables"); os.IsNotExist(err) {
++	if _, err := os.Stat("/run/current-system/sw/sbin/iptables"); os.IsNotExist(err) {
+ 		return false
+ 	}
+ 	return true
+diff --git opa-iptables/pkg/controller/handlers.go opa-iptables/pkg/controller/handlers.go
+index 0205422..3f2b7e8 100644
+--- opa-iptables/pkg/controller/handlers.go
++++ opa-iptables/pkg/controller/handlers.go
+@@ -228,7 +228,7 @@ func (c *Controller) listAllRulesHandler() http.HandlerFunc {
+ 		if verbose {
+ 			var buf bytes.Buffer
+ 			for _, table := range iptableTableList {
+-				stdout, err := cmd.RunCommand("/sbin/iptables", "-n", "-v", "-L", "-t", table)
++				stdout, err := cmd.RunCommand("/run/current-system/sw/sbin/iptables", "-n", "-v", "-L", "-t", table)
+ 				if err != nil {
+ 					c.logger.Errorf("Unable to list iptables rule: %v", err)
+ 					w.WriteHeader(http.StatusInternalServerError)
+@@ -238,7 +238,7 @@ func (c *Controller) listAllRulesHandler() http.HandlerFunc {
+ 			}
+ 			fmt.Fprint(w, buf.String())
+ 		} else {
+-			stdout, err := cmd.RunCommand("/sbin/iptables", "-S")
++			stdout, err := cmd.RunCommand("/run/current-system/sw/sbin/iptables", "-S")
+ 			if err != nil {
+ 				c.logger.Errorf("Unable to list iptables rule: %v", err)
+ 				w.WriteHeader(http.StatusInternalServerError)
+@@ -286,4 +286,4 @@ func stringToBool(value string) bool {
+ 		return true
+ 	}
+ 	return false
+-}
+\ No newline at end of file
++}
