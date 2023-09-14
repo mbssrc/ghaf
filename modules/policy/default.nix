@@ -41,9 +41,8 @@ in
         after = [ "network.target" ];
         serviceConfig = {
           Type = "simple";
-          ExecStart = "${pkgs.opa-iptable-client}/bin/opa-iptables --log-level debug";
-          PrivateUsers = true;
-          DynamicUser = true;
+          ExecStart = "${pkgs.opa-iptable-client}/bin/opa-iptables";
+          Environment  = "PATH=$PATH:/run/current-system/sw/bin/";
         };
       };
 
