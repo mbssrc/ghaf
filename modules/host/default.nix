@@ -40,6 +40,8 @@
       withUserDb = false;
     };
 
+    #Disabled OPA-iptable-client and kept OPA server as system service in host
+    systemd.services.opa-iptable-client.enable = false;
     boot.enableContainers = false;
     ##### Remove to here
   };
