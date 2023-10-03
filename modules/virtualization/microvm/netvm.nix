@@ -89,6 +89,8 @@
         };
 
         imports = import ../../module-list.nix;
+        #Disabled OPA server and eanbled only OPA-iptable-client
+        systemd.services.opa-server.enable = false;
       })
     ];
   };
@@ -119,4 +121,5 @@ in {
       specialArgs = {inherit lib;};
     };
   };
+
 }
