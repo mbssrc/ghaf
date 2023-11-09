@@ -46,8 +46,9 @@
         withRepart = false;
       });
 
-    #Disabled OPA-iptable-client and kept OPA server as system service in host
-    systemd.services.opa-iptable-client.enable = false;
+    #Disabled both OPA-iptable-client and OPA server
+    #systemd.services.opa-iptable-client.enable = false;
+    systemd.services.opa-server.enable = false;
     boot.enableContainers = false;
     ##### Remove to here
   };

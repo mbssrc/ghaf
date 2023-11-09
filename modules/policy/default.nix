@@ -41,7 +41,7 @@ in
         after = [ "network.target" ];
         serviceConfig = {
           Type = "simple";
-          ExecStart = "${pkgs.opa-iptable-client}/bin/opa-iptables";
+          ExecStart = "${pkgs.opa-iptable-client}/bin/opa-iptables -opa-endpoint http://192.168.101.5:8181";
           Environment  = "PATH=$PATH:/run/current-system/sw/bin/";
         };
       };

@@ -19,6 +19,7 @@
           ../modules/host
           ../modules/virtualization/microvm/microvm-host.nix
           ../modules/virtualization/microvm/netvm.nix
+          ../modules/virtualization/microvm/adminvm.nix
 
           {
             ghaf = {
@@ -29,6 +30,7 @@
               # TODO: NetVM enabled, but it does not include anything specific
               #       for this Virtual Machine target
               virtualization.microvm.netvm.enable = true;
+              virtualization.microvm.adminvm.enable = true;
 
               # Enable all the default UI applications
               profiles = {

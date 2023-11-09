@@ -7,9 +7,9 @@
   ...
 }: let
   configHost = config;
-  vmName = "net-vm";
-  macAddress = "02:00:00:01:01:01";
-  netvmBaseConfiguration = {
+  vmName = "admin-vm";
+  macAddress = "02:00:00:05:05:05";
+  adminvmBaseConfiguration = {
     imports = [
       (import ./common/vm-networking.nix {inherit vmName macAddress;})
       ({lib, ...}: {
@@ -35,13 +35,13 @@
           firewall.allowedUDPPorts = [53];
         };
 
-        # Dnsmasq is used as a DHCP/DNS server inside the NetVM
+        # Dnsmasq is used as a DHCP/DNS server inside the AdminVM
         services.dnsmasq = {
           enable = true;
           resolveLocalQueries = true;
           settings = {
             server = ["8.8.8.8"];
-            dhcp-range = ["192.168.100.2,192.168.100.254"];
+            dhcp-range = ["192.168.100.4,192.168.100.254"];
             dhcp-sequential-ip = true;
             dhcp-authoritative = true;
             domain = "ghaf";
@@ -65,11 +65,11 @@
             matchConfig.MACAddress = macAddress;
             addresses = [
               {
-                addressConfig.Address = "192.168.100.1/24";
+                addressConfig.Address = "192.168.100.5/24";
               }
               {
                 # IP-address for debugging subnet
-                addressConfig.Address = "192.168.101.1/24";
+                addressConfig.Address = "192.168.101.5/24";
               }
             ];
             linkConfig.ActivationPolicy = "always-up";
@@ -89,20 +89,20 @@
         };
 
         imports = import ../../module-list.nix;
-        #Disabled OPA server and enbled only OPA-iptable-client
-        systemd.services.opa-server.enable = false;
+        #Disabled OPA IP table client and enbled only OPA server
+        systemd.services.opa-iptable-client.enable = false;
       })
     ];
   };
-  cfg = config.ghaf.virtualization.microvm.netvm;
+  cfg = config.ghaf.virtualization.microvm.adminvm;
 in {
-  options.ghaf.virtualization.microvm.netvm = {
-    enable = lib.mkEnableOption "NetVM";
+  options.ghaf.virtualization.microvm.adminvm = {
+    enable = lib.mkEnableOption "AdminVM";
 
     extraModules = lib.mkOption {
       description = ''
         List of additional modules to be imported and evaluated as part of
-        NetVM's NixOS configuration.
+        AdminVM's NixOS configuration.
       '';
       default = [];
     };
@@ -112,10 +112,10 @@ in {
     microvm.vms."${vmName}" = {
       autostart = true;
       config =
-        netvmBaseConfiguration
+        adminvmBaseConfiguration
         // {
           imports =
-            netvmBaseConfiguration.imports
+            adminvmBaseConfiguration.imports
             ++ cfg.extraModules;
         };
       specialArgs = {inherit lib;};

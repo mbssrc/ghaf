@@ -16,6 +16,7 @@ in
     config = mkIf cfg.enable {
       networking = {
         enableIPv6 = false;
+        firewall.allowedTCPPorts = [8181 33455];
         useNetworkd = true;
         interfaces.virbr0.useDHCP = false;
       };
