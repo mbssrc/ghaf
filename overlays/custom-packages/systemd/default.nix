@@ -15,4 +15,7 @@
         ]}"
       '';
   });
+  systemdMinimal = prev.systemdMinimal.overrideAttrs (prevAttrs: {
+    mesonFlags = (lib.lists.forEach prevAttrs.mesonFlags (x: builtins.replaceStrings ["-Dsmack=true"] ["-Dsmack=false"] x));
+  });
 })

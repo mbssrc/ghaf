@@ -41,7 +41,9 @@
               ssh.daemon.enable = lib.mkDefault configHost.ghaf.development.ssh.daemon.enable;
               debug.tools.enable = lib.mkDefault configHost.ghaf.development.debug.tools.enable;
             };
+            systemd.profiles.appvm.enable = true;
           };
+
 
           users.users.${configHost.ghaf.users.accounts.user}.openssh.authorizedKeys.keyFiles = ["${pkgs.waypipe-ssh}/keys/waypipe-ssh.pub"];
 
