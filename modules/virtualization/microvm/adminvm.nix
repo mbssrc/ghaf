@@ -7,9 +7,9 @@
   ...
 }: let
   configHost = config;
-  vmName = "net-vm";
-  macAddress = "02:00:00:01:01:01";
-  netvmBaseConfiguration = {
+  vmName = "admin-vm";
+  macAddress = "02:00:00:05:05:05";
+  adminvmBaseConfiguration = {
     imports = [
       (import ./common/vm-networking.nix {inherit vmName macAddress;})
       ({lib, ...}: {
@@ -21,8 +21,7 @@
             ssh.daemon.enable = lib.mkDefault configHost.ghaf.development.ssh.daemon.enable;
             debug.tools.enable = lib.mkDefault configHost.ghaf.development.debug.tools.enable;
           };
-          policy.opa-iptable-client.enable = true;
-          policy.tetragon.enable = true;
+          policy.opa.enable = true;
         };
 
         system.stateVersion = lib.trivial.release;
@@ -30,53 +29,14 @@
         nixpkgs.buildPlatform.system = configHost.nixpkgs.buildPlatform.system;
         nixpkgs.hostPlatform.system = configHost.nixpkgs.hostPlatform.system;
 
-        time.timeZone = "Asia/Dubai";
-
-        microvm.hypervisor = "qemu";
-
-        networking = {
-          firewall.allowedTCPPorts = [53];
-          firewall.allowedUDPPorts = [53];
-        };
-
-        # Add simple wi-fi connection helper
-        environment.systemPackages = lib.mkIf config.ghaf.profiles.debug.enable [pkgs.wifi-connector];
-
-        # Dnsmasq is used as a DHCP/DNS server inside the NetVM
-        services.dnsmasq = {
-          enable = true;
-          resolveLocalQueries = true;
-          settings = {
-            server = ["8.8.8.8"];
-            dhcp-range = ["192.168.100.2,192.168.100.254"];
-            dhcp-sequential-ip = true;
-            dhcp-authoritative = true;
-            domain = "ghaf";
-            listen-address = ["127.0.0.1,192.168.100.1"];
-            dhcp-option = [
-              "option:router,192.168.100.1"
-              "6,192.168.100.1"
-            ];
-            expand-hosts = true;
-            domain-needed = true;
-            bogus-priv = true;
-          };
-        };
-
-        # Disable resolved since we are using Dnsmasq
-        services.resolved.enable = false;
-
         systemd.network = {
           enable = true;
           networks."10-ethint0" = {
             matchConfig.MACAddress = macAddress;
             addresses = [
               {
-                addressConfig.Address = "192.168.100.1/24";
-              }
-              {
                 # IP-address for debugging subnet
-                addressConfig.Address = "192.168.101.1/24";
+                addressConfig.Address = "192.168.101.5/24";
               }
             ];
             linkConfig.ActivationPolicy = "always-up";
@@ -84,6 +44,7 @@
         };
 
         microvm = {
+          hypervisor = "qemu";
           optimize.enable = true;
           shares = [
             {
@@ -99,15 +60,15 @@
       })
     ];
   };
-  cfg = config.ghaf.virtualization.microvm.netvm;
+  cfg = config.ghaf.virtualization.microvm.adminvm;
 in {
-  options.ghaf.virtualization.microvm.netvm = {
-    enable = lib.mkEnableOption "NetVM";
+  options.ghaf.virtualization.microvm.adminvm = {
+    enable = lib.mkEnableOption "AdminVM";
 
     extraModules = lib.mkOption {
       description = ''
         List of additional modules to be imported and evaluated as part of
-        NetVM's NixOS configuration.
+        AdminVM's NixOS configuration.
       '';
       default = [];
     };
@@ -117,13 +78,14 @@ in {
     microvm.vms."${vmName}" = {
       autostart = true;
       config =
-        netvmBaseConfiguration
+        adminvmBaseConfiguration
         // {
           imports =
-            netvmBaseConfiguration.imports
+            adminvmBaseConfiguration.imports
             ++ cfg.extraModules;
         };
       specialArgs = {inherit lib;};
     };
   };
+
 }

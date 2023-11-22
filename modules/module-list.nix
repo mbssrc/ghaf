@@ -18,4 +18,5 @@
   ./version
   ./virtualization/docker.nix
   ./windows-launcher
+  ./policy
 ]

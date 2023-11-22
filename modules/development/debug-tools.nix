@@ -33,6 +33,7 @@ in
           traceroute
           dig
           evtest
+          nmap
 
           # Performance testing
           speedtest-cli

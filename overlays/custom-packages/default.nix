@@ -11,5 +11,7 @@
     (import ./weston)
     (import ./wifi-connector)
     (import ./qemu)
+    (import ./opa)
+    (import ./tetragon)
   ];
 }
