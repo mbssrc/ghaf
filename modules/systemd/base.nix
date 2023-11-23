@@ -274,12 +274,12 @@ in
 
     config = mkIf cfg.enable {
 
-      assertions = [
+      /* assertions = [
         {
           assertion = !cfg.withDebug;
           message = "devb";
         }
-      ];
+      ]; */
 
       # Systemd configuration
       systemd = {

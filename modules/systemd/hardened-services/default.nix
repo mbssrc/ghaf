@@ -25,7 +25,7 @@
 	systemd-journal-catalog-update.serviceConfig = (import ./configs/systemd-journal-catalog-update.nix);
 	systemd-journal-flush.serviceConfig = (import ./configs/systemd-journal-flush.nix);
 	enable-ksm.serviceConfig = (import ./configs/enable-ksm.nix);
-	"user@".serviceConfig = (import ./configs/user.nix);
+	#"user@".serviceConfig = (import ./configs/user.nix);
 	"user-runtime-dir@".serviceConfig = (import ./configs/user-runtime-dir.nix);
 	"modprobe@".serviceConfig = (import ./configs/modprobe.nix);
 	"microvm@".serviceConfig = (import ./configs/microvm.nix);
