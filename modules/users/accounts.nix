@@ -1,4 +1,4 @@
-# Copyright 2022-2023 TII (SSRC) and the Ghaf contributors
+# Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 {
   config,
@@ -35,9 +35,9 @@ in
         mutableUsers = true;
         users."${cfg.user}" = {
           isNormalUser = true;
-          password = cfg.password;
+          inherit (cfg) password;
           #TODO add "docker" use "lib.optionals"
-          extraGroups = ["wheel" "video"];
+          extraGroups = ["wheel" "video" "networkmanager"];
         };
         groups."${cfg.user}" = {
           name = cfg.user;

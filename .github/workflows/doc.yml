@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2022-2023 TII (SSRC) and the Ghaf contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
 name: doc
 
 on:
@@ -14,8 +18,8 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v3
-      - uses: cachix/install-nix-action@v22
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v24
       - name: build
         run: nix build .#doc
       - name: deploy

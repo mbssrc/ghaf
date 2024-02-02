@@ -1,4 +1,4 @@
-# Copyright 2022-2023 TII (SSRC) and the Ghaf contributors
+# Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 {
   lib,
@@ -7,7 +7,7 @@
   ...
 }: let
   cfg = config.ghaf.windows-launcher;
-  windows-launcher = pkgs.callPackage ../../user-apps/windows-launcher {enableSpice = cfg.spice;};
+  windows-launcher = pkgs.callPackage ../../packages/windows-launcher {enableSpice = cfg.spice;};
 in {
   options.ghaf.windows-launcher = {
     enable = lib.mkEnableOption "Windows launcher";

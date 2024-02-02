@@ -1,4 +1,4 @@
-# Copyright 2022-2023 TII (SSRC) and the Ghaf contributors
+# Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 {
   pkgs,
@@ -68,6 +68,10 @@ in {
           background-image=${../../assets/wallpaper.png}
           background-type=scale-crop
           num-workspaces=2
+
+          # Set the keyboard layout for weston to US by default
+          [keyboard]
+          keymap_layout=us,fi
 
           # Enable Hack font for weston-terminal
           [terminal]

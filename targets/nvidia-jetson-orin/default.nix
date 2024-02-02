@@ -1,7 +1,6 @@
-# Copyright 2022-2023 TII (SSRC) and the Ghaf contributors
+# Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 {
-  self,
   lib,
   nixpkgs,
   nixos-generators,
@@ -49,10 +48,20 @@
           ../../modules/host
           ../../modules/virtualization/microvm/microvm-host.nix
           ../../modules/virtualization/microvm/netvm.nix
-          {
+          ({config, ...}: {
             ghaf = {
-              hardware.nvidia.orin.enable = true;
-              hardware.nvidia.orin.somType = som;
+              hardware.nvidia.orin = {
+                enable = true;
+                somType = som;
+                agx.enableNetvmWlanPCIPassthrough = som == "agx";
+                nx.enableNetvmEthernetPCIPassthrough = som == "nx";
+              };
+
+              hardware.nvidia = {
+                virtualization.enable = false;
+                virtualization.host.bpmp.enable = false;
+                passthroughs.host.uarta.enable = false;
+              };
 
               virtualization.microvm-host.enable = true;
               host.networking.enable = true;
@@ -68,10 +77,12 @@
                 release.enable = variant == "release";
                 debug.enable = variant == "debug";
               };
-              # TODO when supported on x86 move under virtualization
-              windows-launcher.enable = true;
+              # Disable windows-launcher with cross-compilation for now
+              windows-launcher.enable =
+                config.nixpkgs.buildPlatform.system
+                == config.nixpkgs.hostPlatform.system;
             };
-          }
+          })
 
           (import ./optee.nix {inherit jetpack-nixos;})
 
@@ -152,10 +163,10 @@
       inherit flash-tools-system;
     };
 in {
-  nixosConfigurations =
+  flake.nixosConfigurations =
     builtins.listToAttrs (map (t: lib.nameValuePair t.name t.hostConfiguration) (targets ++ crossTargets));
 
-  packages = {
+  flake.packages = {
     aarch64-linux =
       builtins.listToAttrs (map (t: lib.nameValuePair t.name t.package) targets)
       # EXPERIMENTAL: The aarch64-linux hosted flashing support is experimental

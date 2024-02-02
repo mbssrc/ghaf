@@ -1,9 +1,8 @@
-# Copyright 2022-2023 TII (SSRC) and the Ghaf contributors
+# Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 {
   config,
   lib,
-  pkgs,
   ...
 }: let
   configHost = config;
@@ -21,7 +20,7 @@
       imports = [
         (import ./common/vm-networking.nix {
           inherit vmName;
-          macAddress = vm.macAddress;
+          inherit (vm) macAddress;
         })
         ({
           lib,
@@ -36,21 +35,33 @@
             profiles.graphics.enable = false;
 
             development = {
-              # NOTE: SSH port also becomes accessible on the network interface
-              #       that has been passed through to NetVM
               ssh.daemon.enable = lib.mkDefault configHost.ghaf.development.ssh.daemon.enable;
               debug.tools.enable = lib.mkDefault configHost.ghaf.development.debug.tools.enable;
             };
           };
 
-          users.users.${configHost.ghaf.users.accounts.user}.openssh.authorizedKeys.keyFiles = ["${pkgs.waypipe-ssh}/keys/waypipe-ssh.pub"];
+          # SSH is very picky about the file permissions and ownership and will
+          # accept neither direct path inside /nix/store or symlink that points
+          # there. Therefore we copy the file to /etc/ssh/get-auth-keys (by
+          # setting mode), instead of symlinking it.
+          environment.etc."ssh/get-auth-keys" = {
+            source = let
+              script = pkgs.writeShellScriptBin "get-auth-keys" ''
+                [[ "$1" != "ghaf" ]] && exit 0
+                ${pkgs.coreutils}/bin/cat /run/waypipe-ssh-public-key/id_ed25519.pub
+              '';
+            in "${script}/bin/get-auth-keys";
+            mode = "0555";
+          };
+          services.openssh = {
+            authorizedKeysCommand = "/etc/ssh/get-auth-keys";
+            authorizedKeysCommandUser = "nobody";
+          };
 
           system.stateVersion = lib.trivial.release;
 
           nixpkgs.buildPlatform.system = configHost.nixpkgs.buildPlatform.system;
           nixpkgs.hostPlatform.system = configHost.nixpkgs.hostPlatform.system;
-
-          time.timeZone = "Asia/Dubai";
 
           environment.systemPackages = [
             pkgs.waypipe
@@ -62,6 +73,11 @@
             vcpu = vm.cores;
             hypervisor = "qemu";
             shares = [
+              {
+                tag = "waypipe-ssh-public-key";
+                source = "/run/waypipe-ssh-public-key";
+                mountPoint = "/run/waypipe-ssh-public-key";
+              }
               {
                 tag = "ro-store";
                 source = "/nix/store";
@@ -77,6 +93,7 @@
               "vhost-vsock-pci,guest-cid=${toString cid}"
             ];
           };
+          fileSystems."/run/waypipe-ssh-public-key".options = ["ro"];
 
           imports = import ../../module-list.nix;
         })
@@ -169,11 +186,9 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    microvm.vms = (
-      let
-        vms = lib.imap0 (index: vm: {"${vm.name}-vm" = makeVm {inherit index vm;};}) cfg.vms;
-      in
-        lib.foldr lib.recursiveUpdate {} vms
-    );
+    microvm.vms = let
+      vms = lib.imap0 (index: vm: {"${vm.name}-vm" = makeVm {inherit index vm;};}) cfg.vms;
+    in
+      lib.foldr lib.recursiveUpdate {} vms;
   };
 }

@@ -1,4 +1,4 @@
-# Copyright 2022-2023 TII (SSRC) and the Ghaf contributors
+# Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 #
 # Module which provides partition template for NVIDIA Jetson AGX Orin
@@ -14,8 +14,6 @@
   cfg = config.ghaf.hardware.nvidia.orin;
 
   images = config.system.build.${config.formatAttr};
-  espSize = builtins.readFile "${images}/esp.size";
-  rootSize = builtins.readFile "${images}/root.size";
   partitionsEmmc = pkgs.writeText "sdmmc.xml" ''
     <partition name="master_boot_record" type="protective_master_boot_record">
       <allocation_policy> sequential </allocation_policy>
@@ -36,7 +34,7 @@
     <partition name="esp" id="2" type="data">
       <allocation_policy> sequential </allocation_policy>
       <filesystem_type> basic </filesystem_type>
-      <size> ${espSize} </size>
+      <size> ESP_SIZE </size>
       <file_system_attribute> 0 </file_system_attribute>
       <allocation_attribute> 0x8 </allocation_attribute>
       <percent_reserved> 0 </percent_reserved>
@@ -47,7 +45,7 @@
     <partition name="APP" id="1" type="data">
       <allocation_policy> sequential </allocation_policy>
       <filesystem_type> basic </filesystem_type>
-      <size> ${rootSize} </size>
+      <size> ROOT_SIZE </size>
       <file_system_attribute> 0 </file_system_attribute>
       <allocation_attribute> 0x8 </allocation_attribute>
       <align_boundary> 16384 </align_boundary>
@@ -112,7 +110,7 @@ in
           echo "============================================================"
           echo "ghaf flashing script"
           echo "============================================================"
-          echo "ghaf version: ${lib.ghaf.version}"
+          echo "ghaf version: ${lib.ghaf-version}"
           echo "cross-compiled build: @isCross@"
           echo "l4tVersion: @l4tVersion@"
           echo "som: ${config.hardware.nvidia-jetpack.som}"
@@ -125,12 +123,25 @@ in
           mkdir -pv "$WORKDIR/bootloader"
         ''
         + lib.optionalString (!cfg.flashScriptOverrides.onlyQSPI) ''
-          echo "Decompressing ${images}/esp.img.zst into $WORKDIR/bootloader/esp.img ..."
-          @pzstd@ -d "${images}/esp.img.zst" -o "$WORKDIR/bootloader/esp.img"
-          echo "Decompressing ${images}/root.img.zst into $WORKDIR/root.img ..."
-          @pzstd@ -d "${images}/root.img.zst" -o "$WORKDIR/root.img"
+          ESP_OFFSET=$(cat "${images}/esp.offset")
+          ESP_SIZE=$(cat "${images}/esp.size")
+          ROOT_OFFSET=$(cat "${images}/root.offset")
+          ROOT_SIZE=$(cat "${images}/root.size")
+
+          img="${images}/sd-image/${config.sdImage.imageName}.zst"
+          echo "Extracting ESP partition to $WORKDIR/bootloader/esp.img ..."
+          dd if=<(@pzstd@ -d "$img" -c) of="$WORKDIR/bootloader/esp.img" bs=512 iseek="$ESP_OFFSET" count="$ESP_SIZE"
+          echo "Extracting root partition to $WORKDIR/root.img ..."
+          dd if=<(@pzstd@ -d "$img" -c) of="$WORKDIR/bootloader/root.img" bs=512 iseek="$ROOT_OFFSET" count="$ROOT_SIZE"
+
           echo "Patching flash.xml with absolute paths to esp.img and root.img ..."
-          @sed@ -i -e "s#bootloader/esp.img#$WORKDIR/bootloader/esp.img#" -e "s#root.img#$WORKDIR/root.img#" flash.xml
+          @sed@ -i \
+            -e "s#bootloader/esp.img#$WORKDIR/bootloader/esp.img#" \
+            -e "s#root.img#$WORKDIR/root.img#" \
+            -e "s#ESP_SIZE#$((ESP_SIZE * 512))#" \
+            -e "s#ROOT_SIZE#$((ROOT_SIZE * 512))#" \
+            flash.xml
+
         ''
         + lib.optionalString cfg.flashScriptOverrides.onlyQSPI ''
           echo "Flashing QSPI only, boot and root images not included."

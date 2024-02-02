@@ -1,9 +1,8 @@
-# Copyright 2022-2023 TII (SSRC) and the Ghaf contributors
+# Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 #
 # Polarfire Enablement Kit
 {
-  self,
   lib,
   nixpkgs,
   nixos-hardware,
@@ -43,6 +42,7 @@
                 debug.tools.enable = variant == "debug";
                 ssh.daemon.enable = true;
               };
+              firewall.kernel-modules.enable = true;
               windows-launcher.enable = false;
             };
             nixpkgs = {
@@ -67,9 +67,9 @@
     (microchip-icicle-kit "release" [])
   ];
 in {
-  nixosConfigurations =
+  flake.nixosConfigurations =
     builtins.listToAttrs (map (t: lib.nameValuePair t.name t.hostConfiguration) targets);
-  packages = {
+  flake.packages = {
     riscv64-linux =
       builtins.listToAttrs (map (t: lib.nameValuePair t.name t.package) targets);
   };

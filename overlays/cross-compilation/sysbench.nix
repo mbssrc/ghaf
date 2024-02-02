@@ -1,10 +1,10 @@
-# Copyright 2022-2023 TII (SSRC) and the Ghaf contributors
+# Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 #
 # This overlay is for specific fixes needed only to enable cross-compilation.
 #
 (final: prev: {
-  libck = prev.libck.overrideAttrs (old: {
+  libck = prev.libck.overrideAttrs (_old: {
     postPatch = ''
       substituteInPlace \
         configure \

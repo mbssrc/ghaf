@@ -1,4 +1,4 @@
-# Copyright 2022-2023 TII (SSRC) and the Ghaf contributors
+# Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: CC-BY-SA-4.0
 {
   fetchFromGitHub,
@@ -17,3 +17,5 @@ rustPlatform.buildRustPackage rec {
 
   cargoHash = "sha256-Ig+uVCO5oHIkkvFsKiBiUFzjUgH/Pydn4MVJHb2wKGc=";
 }
+# TODO upstream this to nixpkgs
+

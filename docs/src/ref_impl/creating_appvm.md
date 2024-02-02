@@ -1,5 +1,5 @@
 <!--
-    Copyright 2022-2023 TII (SSRC) and the Ghaf contributors
+    Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
     SPDX-License-Identifier: CC-BY-SA-4.0
 -->
 
@@ -34,7 +34,7 @@ vms = with pkgs; [
   }
   {
     name = "gala";
-    packages = [(pkgs.callPackage ../user-apps/gala {})];
+    packages = [(pkgs.callPackage ../packages/gala {})];
     macAddress = "02:00:00:03:03:06";
     ramMb = 1536;
     cores = 2;

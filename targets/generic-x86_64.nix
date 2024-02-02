@@ -1,12 +1,10 @@
-# Copyright 2022-2023 TII (SSRC) and the Ghaf contributors
+# Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 #
 # Generic x86_64 computer -target
 {
-  self,
   lib,
   nixos-generators,
-  nixos-hardware,
   microvm,
 }: let
   name = "generic-x86_64";
@@ -95,9 +93,9 @@
     (generic-x86 "release" [])
   ];
 in {
-  nixosConfigurations =
+  flake.nixosConfigurations =
     builtins.listToAttrs (map (t: lib.nameValuePair t.name t.hostConfiguration) targets);
-  packages = {
+  flake.packages = {
     x86_64-linux =
       builtins.listToAttrs (map (t: lib.nameValuePair t.name t.package) targets);
   };

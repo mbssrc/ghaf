@@ -1,4 +1,4 @@
-# Copyright 2022-2023 TII (SSRC) and the Ghaf contributors
+# Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 #
 # Function to generate NVIDIA Jetson Orin flash script
@@ -26,13 +26,6 @@
   devicePkgs = jetpack-nixos.legacyPackages.${devicePkgsSystem}.devicePkgsFromNixosConfig hostConfiguration.config;
 
   inherit (jetpack-nixos.legacyPackages.${devicePkgsSystem}) l4tVersion;
-
-  pkgsAarch64 =
-    if isCross
-    then nixpkgs.legacyPackages.x86_64-linux.pkgsCross.aarch64-multiplatform
-    else nixpkgs.legacyPackages.aarch64-linux;
-
-  inherit (pkgsAarch64.callPackages ./uefi-firmware.nix {inherit l4tVersion;}) uefi-firmware;
 
   flashScript = devicePkgs.mkFlashScript {
     flash-tools = flash-tools.overrideAttrs ({postPatch ? "", ...}: {

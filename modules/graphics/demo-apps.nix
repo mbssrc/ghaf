@@ -1,4 +1,4 @@
-# Copyright 2022-2023 TII (SSRC) and the Ghaf contributors
+# Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 {
   pkgs,
@@ -7,7 +7,7 @@
   ...
 }: let
   cfg = config.ghaf.graphics.demo-apps;
-  weston = config.ghaf.graphics.weston;
+  inherit (config.ghaf.graphics) weston;
 
   /*
   Scaled down firefox icon

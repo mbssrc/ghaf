@@ -1,5 +1,5 @@
 <!--
-    Copyright 2023 TII (SSRC) and the Ghaf contributors
+    Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
     SPDX-License-Identifier: CC-BY-SA-4.0
 -->
 
@@ -8,6 +8,7 @@
 The Nix community is able to identify and fix security issues relatively quickly. At the same time, the community process to ensure critical security fixes are included in nixpkgs is unclear or unspecified.
 
 Indeed, Ghaf should not solely rely on the community to provide security fixes but take action to understand the vulnerabilities that impact Ghaf and take an active role in fixing such issues.
+
 
 ## Semi-Automated Upstream-First Process
 

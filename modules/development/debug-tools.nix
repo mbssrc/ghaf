@@ -1,4 +1,4 @@
-# Copyright 2022-2023 TII (SSRC) and the Ghaf contributors
+# Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 {
   config,
@@ -41,6 +41,7 @@ in
         ]
         ++
         # LuaJIT (which is sysbench dependency) not available on RISC-V
+        # TODO Can this be changed to platformPkgs to filter ?
         lib.optional (config.nixpkgs.hostPlatform.system != "riscv64-linux") sysbench;
     };
   }

@@ -1,5 +1,5 @@
 <!--
-    Copyright 2022-2023 TII (SSRC) and the Ghaf contributors
+    Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
     SPDX-License-Identifier: CC-BY-SA-4.0
 -->
 
@@ -24,7 +24,7 @@ The following target hardware is supported by this release:
 
 * Ghaf Modularization (partially done):
   * general description and context on how to use: [Ghaf as Library: Templates](../ref_impl/ghaf-based-project.md)
-  * the development status: <https://github.com/tiiuae/ghaf/tree/ghaf-23.06/modules>
+  * the development status: <https://github.com/tiiuae/ghaf/tree/ghaf-23.06/modules>.
 * SLSA v1.0 level provenance file included.
 * Ghaf version information (query).
 * NixOS is updated to 23.05: [NixOS 23.05 released!](https://discourse.nixos.org/t/nixos-23-05-released/28649)

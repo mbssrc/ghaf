@@ -1,36 +1,115 @@
-# Copyright 2022-2023 TII (SSRC) and the Ghaf contributors
+# Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 #
 # Generic x86_64 computer -target
 {
-  self,
   lib,
   nixos-generators,
-  nixos-hardware,
   microvm,
+  lanzaboote,
+  ...
 }: let
   name = "lenovo-x1-carbon-gen11";
   system = "x86_64-linux";
   formatModule = nixos-generators.nixosModules.raw-efi;
+  hwDefinition = {
+    name = "Lenovo X1 Carbon";
+    network.pciDevices = [
+      # Passthrough Intel WiFi card 8086:51f1
+      {
+        path = "0000:00:14.3";
+        vendorId = "8086";
+        productId = "51f1";
+      }
+    ];
+    gpu.pciDevices = [
+      # Passthrough Intel Iris GPU 8086:a7a1
+      {
+        path = "0000:00:02.0";
+        vendorId = "8086";
+        productId = "a7a1";
+      }
+    ];
+    virtioInputHostEvdevs = [
+      # Lenovo X1 touchpad and keyboard
+      "/dev/input/by-path/platform-i8042-serio-0-event-kbd"
+      "/dev/mouse"
+      "/dev/touchpad"
+      # Lenovo X1 trackpoint (red button/joystick)
+      "/dev/input/by-path/platform-i8042-serio-1-event-mouse"
+    ];
+  };
   lenovo-x1 = variant: extraModules: let
     netvmExtraModules = [
-      {
-        microvm.devices = lib.mkForce [
-          {
-            bus = "pci";
-            path = "0000:00:14.3";
-          }
-        ];
+      ({pkgs, ...}: {
+        microvm = {
+          shares = [
+            {
+              tag = "waypipe-ssh-public-key";
+              source = "/run/waypipe-ssh-public-key";
+              mountPoint = "/run/waypipe-ssh-public-key";
+            }
+          ];
+        };
+        fileSystems."/run/waypipe-ssh-public-key".options = ["ro"];
 
         # For WLAN firmwares
         hardware.enableRedistributableFirmware = true;
 
-        networking.wireless = {
-          enable = true;
-
-          #networks."ssid".psk = "psk";
+        networking = {
+          # wireless is disabled because we use NetworkManager for wireless
+          wireless.enable = false;
+          networkmanager = {
+            enable = true;
+            unmanaged = ["ethint0"];
+          };
         };
-      }
+        # noXlibs=false; needed for NetworkManager stuff
+        environment.noXlibs = false;
+        environment.etc."NetworkManager/system-connections/Wifi-1.nmconnection" = {
+          text = ''
+            [connection]
+            id=Wifi-1
+            uuid=33679db6-4cde-11ee-be56-0242ac120002
+            type=wifi
+            [wifi]
+            mode=infrastructure
+            ssid=SSID_OF_NETWORK
+            [wifi-security]
+            key-mgmt=wpa-psk
+            psk=WPA_PASSWORD
+            [ipv4]
+            method=auto
+            [ipv6]
+            method=disabled
+            [proxy]
+          '';
+          mode = "0600";
+        };
+
+        # Waypipe-ssh key is used here to create keys for ssh tunneling to forward D-Bus sockets.
+        # SSH is very picky about to file permissions and ownership and will
+        # accept neither direct path inside /nix/store or symlink that points
+        # there. Therefore we copy the file to /etc/ssh/get-auth-keys (by
+        # setting mode), instead of symlinking it.
+        environment.etc."ssh/get-auth-keys" = {
+          source = let
+            script = pkgs.writeShellScriptBin "get-auth-keys" ''
+              [[ "$1" != "ghaf" ]] && exit 0
+              ${pkgs.coreutils}/bin/cat /run/waypipe-ssh-public-key/id_ed25519.pub
+            '';
+          in "${script}/bin/get-auth-keys";
+          mode = "0555";
+        };
+        # Add simple wi-fi connection helper
+        environment.systemPackages = lib.mkIf hostConfiguration.config.ghaf.profiles.debug.enable [pkgs.wifi-connector-nmcli];
+        services.openssh = {
+          authorizedKeysCommand = "/etc/ssh/get-auth-keys";
+          authorizedKeysCommandUser = "nobody";
+        };
+
+        time.timeZone = "Asia/Dubai";
+      })
     ];
     guivmConfig = hostConfiguration.config.ghaf.virtualization.microvm.guivm;
     winConfig = hostConfiguration.config.ghaf.windows-launcher;
@@ -40,16 +119,6 @@
         boot.initrd.kernelModules = ["i915"];
 
         microvm.qemu.extraArgs = [
-          # Lenovo X1 touchpad and keyboard
-          "-device"
-          "virtio-input-host-pci,evdev=/dev/input/by-path/platform-i8042-serio-0-event-kbd"
-          "-device"
-          "virtio-input-host-pci,evdev=/dev/mouse"
-          "-device"
-          "virtio-input-host-pci,evdev=/dev/touchpad"
-          # Lenovo X1 trackpoint (red button/joystick)
-          "-device"
-          "virtio-input-host-pci,evdev=/dev/input/by-path/platform-i8042-serio-1-event-mouse"
           # Lenovo X1 Lid button
           "-device"
           "button"
@@ -60,27 +129,21 @@
           "-device"
           "acad"
         ];
-        microvm.devices = [
-          {
-            bus = "pci";
-            path = "0000:00:02.0";
-          }
-        ];
       }
       ({pkgs, ...}: {
         ghaf.graphics.weston.launchers = [
           {
-            path = "${pkgs.openssh}/bin/ssh -i ${pkgs.waypipe-ssh}/keys/waypipe-ssh -o StrictHostKeyChecking=no chromium-vm.ghaf ${pkgs.waypipe}/bin/waypipe --border \"#ff5733,5\" --vsock -s ${toString guivmConfig.waypipePort} server chromium --enable-features=UseOzonePlatform --ozone-platform=wayland";
+            path = "${pkgs.openssh}/bin/ssh -i /run/waypipe-ssh/id_ed25519 -o StrictHostKeyChecking=no chromium-vm.ghaf ${pkgs.waypipe}/bin/waypipe --border \"#ff5733,5\" --vsock -s ${toString guivmConfig.waypipePort} server chromium --enable-features=UseOzonePlatform --ozone-platform=wayland";
             icon = "${../assets/icons/png/browser.png}";
           }
 
           {
-            path = "${pkgs.openssh}/bin/ssh -i ${pkgs.waypipe-ssh}/keys/waypipe-ssh -o StrictHostKeyChecking=no gala-vm.ghaf ${pkgs.waypipe}/bin/waypipe --border \"#33ff57,5\" --vsock -s ${toString guivmConfig.waypipePort} server gala --enable-features=UseOzonePlatform --ozone-platform=wayland";
+            path = "${pkgs.openssh}/bin/ssh -i /run/waypipe-ssh/id_ed25519 -o StrictHostKeyChecking=no gala-vm.ghaf ${pkgs.waypipe}/bin/waypipe --border \"#33ff57,5\" --vsock -s ${toString guivmConfig.waypipePort} server gala --enable-features=UseOzonePlatform --ozone-platform=wayland";
             icon = "${../assets/icons/png/app.png}";
           }
 
           {
-            path = "${pkgs.openssh}/bin/ssh -i ${pkgs.waypipe-ssh}/keys/waypipe-ssh -o StrictHostKeyChecking=no zathura-vm.ghaf ${pkgs.waypipe}/bin/waypipe --border \"#337aff,5\" --vsock -s ${toString guivmConfig.waypipePort} server zathura";
+            path = "${pkgs.openssh}/bin/ssh -i /run/waypipe-ssh/id_ed25519 -o StrictHostKeyChecking=no zathura-vm.ghaf ${pkgs.waypipe}/bin/waypipe --border \"#337aff,5\" --vsock -s ${toString guivmConfig.waypipePort} server zathura";
             icon = "${../assets/icons/png/pdf.png}";
           }
 
@@ -88,7 +151,14 @@
             path = "${pkgs.virt-viewer}/bin/remote-viewer -f spice://${winConfig.spice-host}:${toString winConfig.spice-port}";
             icon = "${../assets/icons/png/windows.png}";
           }
+
+          {
+            path = "${pkgs.nm-launcher}/bin/nm-launcher";
+            icon = "${pkgs.networkmanagerapplet}/share/icons/hicolor/22x22/apps/nm-device-wwan.png";
+          }
         ];
+
+        time.timeZone = "Asia/Dubai";
       })
     ];
     hostConfiguration = lib.nixosSystem {
@@ -96,6 +166,7 @@
       specialArgs = {inherit lib;};
       modules =
         [
+          lanzaboote.nixosModules.lanzaboote
           microvm.nixosModules.host
           ../modules/host
           ../modules/virtualization/microvm/microvm-host.nix
@@ -104,7 +175,7 @@
           ../modules/virtualization/microvm/appvm.nix
           ({
             pkgs,
-            lib,
+            config,
             ...
           }: {
             services.udev.extraRules = ''
@@ -128,7 +199,6 @@
             sound.enable = true;
             hardware.pulseaudio.enable = true;
             hardware.pulseaudio.systemWide = true;
-            nixpkgs.config.pulseaudio = true;
             # Add systemd to require pulseaudio before starting chromium-vm
             systemd.services."microvm@chromium-vm".after = ["pulseaudio.service"];
             systemd.services."microvm@chromium-vm".requires = ["pulseaudio.service"];
@@ -138,7 +208,10 @@
             users.extraUsers.microvm.extraGroups = ["audio" "pulse-access"];
 
             ghaf = {
+              hardware.definition = hwDefinition;
               host.kernel_hardening.enable = false;
+
+              host.hypervisor_hardening.enable = false;
 
               hardware.x86_64.common.enable = true;
 
@@ -146,11 +219,48 @@
               host.networking.enable = true;
               virtualization.microvm.netvm = {
                 enable = true;
-                extraModules = netvmExtraModules;
+                extraModules = let
+                  configH = config;
+                  netvmPCIPassthroughModule = {
+                    microvm.devices = lib.mkForce (
+                      builtins.map (d: {
+                        bus = "pci";
+                        inherit (d) path;
+                      })
+                      configH.ghaf.hardware.definition.network.pciDevices
+                    );
+                  };
+                in
+                  [netvmPCIPassthroughModule]
+                  ++ netvmExtraModules;
               };
               virtualization.microvm.guivm = {
                 enable = true;
-                extraModules = guivmExtraModules;
+                extraModules = let
+                  configH = config;
+                  guivmPCIPassthroughModule = {
+                    microvm.devices = lib.mkForce (
+                      builtins.map (d: {
+                        bus = "pci";
+                        inherit (d) path;
+                      })
+                      configH.ghaf.hardware.definition.gpu.pciDevices
+                    );
+                  };
+                  guivmVirtioInputHostEvdevModule = {
+                    microvm.qemu.extraArgs =
+                      builtins.concatMap (d: [
+                        "-device"
+                        "virtio-input-host-pci,evdev=${d}"
+                      ])
+                      configH.ghaf.hardware.definition.virtioInputHostEvdevs;
+                  };
+                in
+                  [
+                    guivmPCIPassthroughModule
+                    guivmVirtioInputHostEvdevModule
+                  ]
+                  ++ guivmExtraModules;
               };
               virtualization.microvm.appvm = {
                 enable = true;
@@ -167,7 +277,8 @@
                         sound.enable = true;
                         hardware.pulseaudio.enable = true;
                         users.extraUsers.ghaf.extraGroups = ["audio"];
-                        nixpkgs.config.pulseaudio = true;
+
+                        time.timeZone = "Asia/Dubai";
 
                         microvm.qemu.extraArgs = [
                           # Lenovo X1 integrated usb webcam
@@ -194,6 +305,11 @@
                     macAddress = "02:00:00:03:06:01";
                     ramMb = 1536;
                     cores = 2;
+                    extraModules = [
+                      {
+                        time.timeZone = "Asia/Dubai";
+                      }
+                    ];
                   }
                   {
                     name = "zathura";
@@ -201,10 +317,12 @@
                     macAddress = "02:00:00:03:07:01";
                     ramMb = 512;
                     cores = 1;
+                    extraModules = [
+                      {
+                        time.timeZone = "Asia/Dubai";
+                      }
+                    ];
                   }
-                ];
-                extraModules = [
-                  ../overlays/custom-packages
                 ];
               };
 
@@ -247,17 +365,24 @@
           # SEE: https://github.com/NixOS/nixos-hardware/blob/master/flake.nix
           # nixos-hardware.nixosModules.lenovo-thinkpad-x1-10th-gen
 
-          {
-            boot.kernelParams = [
+          ({config, ...}: {
+            boot.kernelParams = let
+              filterDevices = builtins.filter (d: d.vendorId != null && d.productId != null);
+              mapPciIdsToString = builtins.map (d: "${d.vendorId}:${d.productId}");
+              vfioPciIds = mapPciIdsToString (filterDevices (
+                config.ghaf.hardware.definition.network.pciDevices
+                ++ config.ghaf.hardware.definition.gpu.pciDevices
+              ));
+            in [
               "intel_iommu=on,igx_off,sm_on"
               "iommu=pt"
+              # Prevent i915 module from being accidentally used by host
+              "module_blacklist=i915"
 
-              # Passthrough Intel WiFi card 8086:51f1
-              # Passthrough Intel Iris GPU 8086:a7a1
-              "vfio-pci.ids=8086:51f1,8086:a7a1"
+              "vfio-pci.ids=${builtins.concatStringsSep "," vfioPciIds}"
             ];
             boot.initrd.availableKernelModules = ["nvme"];
-          }
+          })
         ]
         ++ (import ../modules/module-list.nix)
         ++ extraModules;
@@ -273,23 +398,28 @@
       ghaf.development.usb-serial.enable = true;
       ghaf.profiles.debug.enable = true;
     }
+    ../modules/host/secureboot.nix
+    {
+      ghaf.host.secureboot.enable = false;
+    }
   ];
   releaseModules = [
     {
       ghaf.profiles.release.enable = true;
     }
   ];
-  gnomeModules = [{ghaf.virtualization.microvm.guivm.extraModules = [{ghaf.profiles.graphics.compositor = "gnome";}];}];
+  # TODO move Gnome to its own module repo
+  #gnomeModules = [{ghaf.virtualization.microvm.guivm.extraModules = [{ghaf.profiles.graphics.compositor = "gnome";}];}];
   targets = [
     (lenovo-x1 "debug" debugModules)
     (lenovo-x1 "release" releaseModules)
-    (lenovo-x1 "gnome-debug" (gnomeModules ++ debugModules))
-    (lenovo-x1 "gnome-release" (gnomeModules ++ releaseModules))
+    # (lenovo-x1 "gnome-debug" (gnomeModules ++ debugModules))
+    # (lenovo-x1 "gnome-release" (gnomeModules ++ releaseModules))
   ];
 in {
-  nixosConfigurations =
+  flake.nixosConfigurations =
     builtins.listToAttrs (map (t: lib.nameValuePair t.name t.hostConfiguration) targets);
-  packages = {
+  flake.packages = {
     x86_64-linux =
       builtins.listToAttrs (map (t: lib.nameValuePair t.name t.package) targets);
   };
