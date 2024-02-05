@@ -33,7 +33,7 @@
 
               # Enable all the default UI applications
               profiles = {
-                applications.enable = false;
+                applications.enable = true;
                 #TODO clean this up when the microvm is updated to latest
                 release.enable = variant == "release";
                 debug.enable = variant == "debug";

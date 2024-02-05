@@ -39,6 +39,7 @@
           ../modules/host
           ../modules/virtualization/microvm/microvm-host.nix
           ../modules/virtualization/microvm/netvm.nix
+          ../modules/virtualization/microvm/adminvm.nix
           {
             ghaf = {
               hardware.x86_64.common.enable = true;
@@ -49,6 +50,8 @@
                 enable = true;
                 extraModules = netvmExtraModules;
               };
+
+              virtualization.microvm.adminvm.enable = true;
 
               # Enable all the default UI applications
               profiles = {

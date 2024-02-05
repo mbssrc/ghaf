@@ -31,7 +31,7 @@ in
           User = "root";
           Group = "root";
           Environment="PATH=${pkgs.tetragon}/lib/tetragon/:${pkgs.tetragon}/lib:${pkgs.tetragon}/bin";
-          ExecStart = "${pkgs.tetragon}/bin/tetragon";
+          ExecStart = "${pkgs.tetragon}/bin/tetragon --bpf-lib ${pkgs.tetragon}/lib/tetragon/bpf --server-address 0.0.0.0:3333 ";
           StartLimitBurst = 10;
           StartLimitIntervalSec = 120;
         };
@@ -41,9 +41,10 @@ in
         tetragon.source = "${pkgs.tetragon}/lib/tetragon/";
       };
 
-      # networking = {
-      #   firewall.allowedTCPPorts = [ 123 ];
-      # };
+      environment.systemPackages = with pkgs; [tetragon];
+       networking = {
+         firewall.allowedTCPPorts = [ 3333 ];
+       };
 
     };
 

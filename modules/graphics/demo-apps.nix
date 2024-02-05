@@ -36,7 +36,8 @@
 in {
   options.ghaf.graphics.demo-apps = with lib; {
     chromium = mkProgramOption "Chromium browser" false;
-    firefox = mkProgramOption "Firefox browser" weston.enableDemoApplications;
+    firefox = mkProgramOption "Firefox browser" false;
+#    firefox = mkProgramOption "Firefox browser" weston.enableDemoApplications;
     gala-app = mkProgramOption "Gala App" false;
     element-desktop = mkProgramOption "Element desktop" weston.enableDemoApplications;
     zathura = mkProgramOption "zathura" weston.enableDemoApplications;

@@ -2,32 +2,39 @@
 # SPDX-License-Identifier: Apache-2.0
 {
   stdenv,
-  lib,
+  config,
   fetchurl,
+  pkgs,
+  lib,
   ...
 }:
+let 
+  srcPath = "install/linux-tarball";
+in  
   stdenv.mkDerivation rec {
     name = "tetragon";
-    version = "v1.0.0";
-    targetSystem = if stdenv.isAarch64 then "arm64" else "amd64";
+    version = "v0.11.0";
 
-    src =
-      if stdenv.isAarch64
-      then
-        fetchurl {
-          url = "https://github.com/cilium/tetragon/releases/download/${version}/tetragon-${version}-${targetSystem}.tar.gz";
-          sha256 = "sha256-lpJJHsvhvhY02YOvJXood6Rvd3PdbK9Zl9hI9JNCLsg=";
-        }
-      else
-        fetchurl {
-          url = "https://github.com/cilium/tetragon/releases/download/${version}/tetragon-${version}-${targetSystem}.tar.gz";
-          sha256 = "sha256-7rGWlxxhku7Q0V4gyIiaYf+uZNd+Md/RXxnwPJNxK/Y=";
-        };
+    buildInputs = with pkgs; [pkg-config go llvm_16 clang_16];
+    src = pkgs.fetchFromGitHub {
+      owner = "cilium";
+      repo = "tetragon";
+      rev = "refs/tags/${version}";
+      sha256 = "sha256-KOR5MMRnhrlcMPqRjzjSJXvitiZQ8/tlxEnBiQG2x/Q=";
+    };
+ 
+    buildPhase = ''
+      export HOME=$TMP
+      export LOCAL_CLANG=1
+      export LOCAL_CLANG_FORMAT=1
+      make tetragon
+      make tetragon-operator
+      make tetra
+      NIX_CFLAGS_COMPILE="-fno-stack-protector -Qunused-arguments" make tetragon-bpf
+    '';
 
-    srcPath = "tetragon-${version}-${targetSystem}";
-
-    unpackPhase = ''
-      tar -xvf $src
+    postPatch = ''
+      substituteInPlace bpf/Makefile --replace '/bin/bash' '${pkgs.bash}/bin/bash'
     '';
 
     installPhase = ''
@@ -35,11 +42,10 @@
       mkdir -p $out/lib/tetragon
       sed -i "s+/usr/local/+$out/+g" ${srcPath}/usr/local/lib/tetragon/tetragon.conf.d/bpf-lib
       cp -n -r ${srcPath}/usr/local/lib/tetragon/tetragon.conf.d/ $out/lib/tetragon/
-      cp -n -r ${srcPath}/usr/local/lib/tetragon/bpftool $out/lib/tetragon/ # install?
-      cp -n -r ${srcPath}/usr/local/lib/tetragon/bpf $out/lib/tetragon/
+      cp -n -r ./bpf/objs $out/lib/tetragon/bpf
       mkdir -p $out/lib/tetragon/tetragon.tp.d/
-      install -m755 -D ${srcPath}/usr/local/bin/tetra $out/bin/tetra
-      install -m755 -D ${srcPath}/usr/local/bin/tetragon $out/bin/tetragon
+      install -m755 -D ./tetra $out/bin/tetra
+      install -m755 -D ./tetragon $out/bin/tetragon
     '';
 
     meta = with lib; {

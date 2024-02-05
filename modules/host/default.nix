@@ -22,6 +22,9 @@
   ];
 
   config = {
+    ghaf = {
+      policy.tetragon.enable = true;
+    };
     networking.hostName = "ghaf-host";
     system.stateVersion = lib.trivial.release;
 
