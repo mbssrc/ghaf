@@ -6,6 +6,7 @@
 {
   imports = [
     ./virtualization/microvm/microvm-host.nix
+    ./virtualization/microvm/adminvm.nix
     ./virtualization/microvm/netvm.nix
     ./virtualization/microvm/appvm.nix
     ./virtualization/microvm/guivm.nix
