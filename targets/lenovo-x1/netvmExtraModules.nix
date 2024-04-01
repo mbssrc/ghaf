@@ -80,4 +80,8 @@
 
     time.timeZone = "Asia/Dubai";
   };
-in [./sshkeys.nix netvmPCIPassthroughModule netvmAdditionalConfig]
+in [
+  ./sshkeys.nix
+  netvmPCIPassthroughModule
+  netvmAdditionalConfig
+]

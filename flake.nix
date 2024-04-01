@@ -124,6 +124,15 @@
         flake-compat.follows = "flake-compat";
       };
     };
+
+    givc = {
+      url = "github:mbssrc/givc";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+    };
+
   };
 
   outputs = inputs @ {flake-parts, ...}: let

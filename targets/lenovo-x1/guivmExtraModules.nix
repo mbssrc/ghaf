@@ -43,22 +43,24 @@
       hostAddress = "192.168.101.2";
       powerControl = pkgs.callPackage ../../packages/powercontrol {};
       powerControlIcons = pkgs.gnome.callPackage ../../packages/powercontrol/png-icons.nix {};
+      adminAddr = configH.ghaf.givc.adminConfig.addr;
+      adminPort = configH.ghaf.givc.adminConfig.port;
     in [
       {
         name = "chromium";
-        path = "${pkgs.openssh}/bin/ssh -i ${configH.ghaf.security.sshKeys.sshKeyPath} -o StrictHostKeyChecking=no chromium-vm.ghaf run-waypipe chromium --enable-features=UseOzonePlatform --ozone-platform=wayland";
+        path = "${pkgs.givc-app}/bin/givc-app -name chromium -ip ${adminAddr} -port ${adminPort} -notls";
         icon = "${../../assets/icons/png/browser.png}";
       }
 
       {
         name = "gala";
-        path = "${pkgs.openssh}/bin/ssh -i ${configH.ghaf.security.sshKeys.sshKeyPath} -o StrictHostKeyChecking=no gala-vm.ghaf run-waypipe gala --enable-features=UseOzonePlatform --ozone-platform=wayland";
+        path = "${pkgs.givc-app}/bin/givc-app -name gala -ip ${adminAddr} -port ${adminPort} -notls";
         icon = "${../../assets/icons/png/app.png}";
       }
 
       {
         name = "zathura";
-        path = "${pkgs.openssh}/bin/ssh -i ${configH.ghaf.security.sshKeys.sshKeyPath} -o StrictHostKeyChecking=no zathura-vm.ghaf run-waypipe zathura";
+        path = "${pkgs.givc-app}/bin/givc-app -name zathura -ip ${adminAddr} -port ${adminPort} -notls";
         icon = "${../../assets/icons/png/pdf.png}";
       }
 
@@ -76,19 +78,13 @@
 
       {
         name = "poweroff";
-        path = "${powerControl.makePowerOffCommand {
-          inherit hostAddress;
-          inherit (configH.ghaf.security.sshKeys) sshKeyPath;
-        }}";
+        path = "${pkgs.givc-app}/bin/givc-app -name poweroff -ip ${adminAddr} -port ${adminPort} -notls";
         icon = "${powerControlIcons}/${powerControlIcons.relativeShutdownIconPath}";
       }
 
       {
         name = "reboot";
-        path = "${powerControl.makeRebootCommand {
-          inherit hostAddress;
-          inherit (configH.ghaf.security.sshKeys) sshKeyPath;
-        }}";
+        path = "${pkgs.givc-app}/bin/givc-app -name reboot -ip ${adminAddr} -port ${adminPort} -notls";
         icon = "${powerControlIcons}/${powerControlIcons.relativeRebootIconPath}";
       }
 

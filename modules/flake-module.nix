@@ -4,7 +4,10 @@
 # Modules to be exported from Flake
 #
 {inputs, ...}: {
-  imports = [./disko/flake-module.nix];
+  imports = [
+    ./disko/flake-module.nix
+    ./givc/flake-module.nix
+  ];
 
   flake.nixosModules = {
     common.imports = [

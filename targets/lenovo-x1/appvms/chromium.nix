@@ -1,7 +1,7 @@
 # Copyright 2024 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 #
-{pkgs, ...}: let
+{lib, pkgs, ...}: let
   xdgPdfPort = 1200;
 in {
   name = "chromium";
@@ -38,6 +38,11 @@ in {
       users.extraUsers.ghaf.extraGroups = ["audio"];
 
       time.timeZone = "Asia/Dubai";
+      ghaf.givc.appvm = {
+        enable = true;
+        name = lib.mkForce "chromium-vm";
+        applications = lib.mkForce ''{"chromium": "run-waypipe chromium --enable-features=UseOzonePlatform --ozone-platform=wayland"}'';
+      };
 
       microvm.qemu.extraArgs = [
         # Connect sound device to hosts pulseaudio socket

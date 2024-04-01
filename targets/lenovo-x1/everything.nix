@@ -32,8 +32,8 @@
           self.nixosModules.host
           self.nixosModules.lanzaboote
           self.nixosModules.microvm
-
           self.nixosModules.disko-lenovo-x1-basic-v1
+          self.nixosModules.givc-host
 
           ./sshkeys.nix
           ({
@@ -86,23 +86,34 @@
               host.networking.enable = true;
               virtualization.microvm.netvm = {
                 enable = true;
-                extraModules = import ./netvmExtraModules.nix {
-                  inherit lib pkgs microvm;
-                  configH = config;
-                };
+                extraModules = [
+                  self.nixosModules.givc-netvm
+                ] ++
+                  (import ./netvmExtraModules.nix {
+                    inherit lib pkgs microvm;
+                    configH = config;
+                  });
               };
               virtualization.microvm.guivm = {
                 enable = true;
-                extraModules =
+                extraModules = [
+                  self.nixosModules.givc-guivm
+                ] ++
                   # TODO convert this to an actual module
-                  import ./guivmExtraModules.nix {
-                    inherit lib pkgs microvm;
+                  (import ./guivmExtraModules.nix {
+                    inherit lib microvm;
+                    pkgs = pkgs.extend(self.overlays.givc-app);
                     configH = config;
-                  };
+                  });
               };
               virtualization.microvm.appvm = {
                 enable = true;
-                vms = import ./appvms/default.nix {inherit pkgs;};
+                vms = import ./appvms/default.nix {
+                  inherit lib pkgs;
+                };
+                extraModules = [
+                  self.nixosModules.givc-appvm
+                ];
               };
 
               # Enable all the default UI applications
