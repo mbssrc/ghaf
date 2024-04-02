@@ -233,11 +233,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1711981813,
-        "narHash": "sha256-6XHxowgIWJsviDWF452kUnGU4pd18P0qn7k5OrFhvBU=",
+        "lastModified": 1712044701,
+        "narHash": "sha256-nyL0E7OGUJ0cg6pgOkeZnfEiy4bqeZ+my1I7yHBnfe4=",
         "owner": "mbssrc",
         "repo": "givc",
-        "rev": "22ede289b6b9dbf57dbbc25dddb30afdf97647ed",
+        "rev": "b22975b22d7ac381c703ab1ef71400e5e7cd6dc2",
         "type": "github"
       },
       "original": {
