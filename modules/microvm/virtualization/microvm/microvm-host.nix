@@ -30,6 +30,10 @@ in
         withResolved = cfg.networkSupport;
         withSerial = config.ghaf.profiles.debug.enable;
         withDebug = config.ghaf.profiles.debug.enable;
+        # withRemoteJournal = {
+        #   enable = true;
+        #   debugServerIpv4 = "192.168.1.186";
+        # };
       };
     };
   }
