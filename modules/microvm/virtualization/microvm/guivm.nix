@@ -37,10 +37,7 @@
             withResolved = true;
             withTimesyncd = true;
             withDebug = configHost.ghaf.profiles.debug.enable;
-            # withRemoteJournal = {
-            #   enable = true;
-            #   debugServerIpv4 = "192.168.1.186";
-            # };
+            withRemoteJournal.enable = true;
           };
         };
 

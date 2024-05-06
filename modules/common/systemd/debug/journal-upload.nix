@@ -24,8 +24,8 @@ in
     debugServerIpv4 = mkOption {
       description = "The IPv4 address of the debug server to which the journal should be uploaded.";
       type = types.str;
-      default = "";
-      example = "192.168.0.1";
+      default = "192.168.101.1";
+      example = "192.168.101.1";
     };
   };
 
