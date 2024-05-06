@@ -22,4 +22,5 @@
   networkmanagerapplet = import ./networkmanagerapplet {inherit prev;};
   htop = import ./htop {inherit prev;};
   mitmweb-ui = final.callPackage ../../packages/mitmweb-ui {};
+  caldera-agent = final.callPackage ../../packages/caldera-agent {};
 })

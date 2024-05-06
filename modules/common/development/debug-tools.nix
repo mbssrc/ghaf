@@ -29,16 +29,16 @@ in {
         inherit
           (pkgs)
           # For lspci:
-          
+
           pciutils
           # For lsusb:
-          
+
           usbutils
           # Useful in NetVM
-          
+
           ethtool
           # Basic monitors
-          
+
           htop
           iftop
           iotop
@@ -46,12 +46,17 @@ in {
           dig
           evtest
           # For deleting Linux Boot Manager entries in automated testing
-          
+
           efibootmgr
           # Performance testing
-          
+
           speedtest-cli
           iperf
+
+          # Security testing
+          checksec
+          lynis
+          caldera-agent
           ;
       }
       ++
