@@ -11,5 +11,10 @@ _: {
       ./definition.nix
       ./x86_64-generic
     ];
+    hw-dell-latitude.imports = [
+      ./definition.nix
+      ./x86_64-generic
+      ./dell-latitude
+    ];
   };
 }

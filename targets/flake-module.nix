@@ -12,5 +12,6 @@
     ./microchip-icicle-kit/flake-module.nix
     ./nvidia-jetson-orin/flake-module.nix
     ./vm/flake-module.nix
+    ./dell-latitude/flake-module.nix
   ];
 }
