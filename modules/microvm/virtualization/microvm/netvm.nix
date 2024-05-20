@@ -46,6 +46,7 @@
             withDebug = config.ghaf.profiles.debug.enable;
             withHardenedConfigs = true;
           };
+          givc.netvm.enable = true;
         };
 
         time.timeZone = config.time.timeZone;
@@ -80,6 +81,14 @@
                 tag = config.ghaf.security.sshKeys.waypipeSshPublicKeyName;
                 source = config.ghaf.security.sshKeys.waypipeSshPublicKeyDir;
                 mountPoint = config.ghaf.security.sshKeys.waypipeSshPublicKeyDir;
+              }
+            ]
+            ++ lib.optionals (config.ghaf.givc.enable && config.ghaf.givc.enableTls) [
+              {
+                tag = "givc";
+                source = "/etc/givc/${vmName}";
+                mountPoint = "/tmp/givc";
+                proto = "virtiofs";
               }
             ];
 

@@ -25,6 +25,7 @@
           self.nixosModules.reference-appvms
           self.nixosModules.reference-programs
           self.nixosModules.reference-services
+          self.nixosModules.givc-host
 
           ({
             pkgs,
@@ -87,11 +88,17 @@
                   netvm = {
                     enable = true;
                     wifi = true;
-                    extraModules = [self.nixosModules.reference-services];
+                    extraModules = [
+                      self.nixosModules.reference-services
+                      self.nixosModules.givc-netvm
+                    ];
                   };
 
                   adminvm = {
                     enable = true;
+                    extraModules = [
+                      self.nixosModules.givc-adminvm
+                    ];
                   };
 
                   idsvm = {
@@ -101,17 +108,25 @@
 
                   guivm = {
                     enable = true;
-                    extraModules = [self.nixosModules.reference-programs];
+                    extraModules = [
+                      self.nixosModules.reference-programs
+                      self.nixosModules.givc-guivm
+                    ];
                   };
 
                   audiovm = {
                     enable = true;
-                    audio = true;
+                    extraModules = [
+                      self.nixosModules.givc-audiovm
+                    ];
                   };
 
                   appvm = {
                     enable = true;
                     vms = config.ghaf.reference.appvms.enabled-app-vms;
+                    extraModules = [
+                      self.nixosModules.givc-appvm
+                    ];
                   };
                 };
               };

@@ -2,6 +2,27 @@
   "nodes": {
     "crane": {
       "inputs": {
+        "nixpkgs": [
+          "givc",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1718078026,
+        "narHash": "sha256-LbQabH6h86ZzTvDnaZHmMwedRZNB2jYtUQzmoqWQoJ8=",
+        "owner": "ipetkov",
+        "repo": "crane",
+        "rev": "a3f0c63eed74a516298932b9b1627dd80b9c3892",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ipetkov",
+        "repo": "crane",
+        "type": "github"
+      }
+    },
+    "crane_2": {
+      "inputs": {
         "flake-compat": [
           "lanzaboote",
           "flake-compat"
@@ -184,6 +205,36 @@
         "type": "github"
       }
     },
+    "givc": {
+      "inputs": {
+        "crane": "crane",
+        "devshell": [
+          "devshell"
+        ],
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "treefmt-nix": [
+          "treefmt-nix"
+        ]
+      },
+      "locked": {
+        "lastModified": 1718286419,
+        "narHash": "sha256-GXeil5LEe09vZSoIbkNFXXyLTDxDvU++aSjjrMJJTl4=",
+        "owner": "tiiuae",
+        "repo": "ghaf-givc",
+        "rev": "819f630cc49628430bfea939c5716b7a66c608ff",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tiiuae",
+        "repo": "ghaf-givc",
+        "type": "github"
+      }
+    },
     "jetpack-nixos": {
       "inputs": {
         "nixpkgs": [
@@ -206,7 +257,7 @@
     },
     "lanzaboote": {
       "inputs": {
-        "crane": "crane",
+        "crane": "crane_2",
         "flake-compat": [
           "flake-compat"
         ],
@@ -391,6 +442,7 @@
         "flake-parts": "flake-parts",
         "flake-root": "flake-root",
         "flake-utils": "flake-utils_2",
+        "givc": "givc",
         "jetpack-nixos": "jetpack-nixos",
         "lanzaboote": "lanzaboote",
         "microvm": "microvm",

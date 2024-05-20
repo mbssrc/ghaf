@@ -58,6 +58,14 @@ in {
       time.timeZone = config.time.timeZone;
 
       microvm.qemu.extraArgs = lib.optionals config.ghaf.hardware.usb.internal.enable config.ghaf.hardware.usb.internal.qemuExtraArgs.webcam;
+      ghaf.givc.appvm = {
+        enable = true;
+        name = lib.mkForce "chromium-vm";
+        applications = lib.mkForce ''          {
+                    "chromium": "run-waypipe chromium --enable-features=UseOzonePlatform --ozone-platform=wayland",
+                    "chromium-ids": "run-waypipe chromium --enable-features=UseOzonePlatform --ozone-platform=wayland --user-data-dir=/home/${config.ghaf.users.accounts.user}/.config/chromium/Default --test-type --ignore-certificate-errors-spki-list=Bq49YmAq1CG6FuBzp8nsyRXumW7Dmkp7QQ/F82azxGU="
+                  }'';
+      };
       microvm.devices = [];
 
       ghaf.reference.programs.chromium.enable = true;

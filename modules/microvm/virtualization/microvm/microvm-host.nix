@@ -46,5 +46,6 @@ in {
         ''}"
       ];
     };
+    ghaf.givc.host.enable = true;
   };
 }

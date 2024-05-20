@@ -49,6 +49,7 @@
             withDebug = configHost.ghaf.profiles.debug.enable;
           };
           services.audio.enable = true;
+          givc.audiovm.enable = true;
         };
 
         environment = {
@@ -89,8 +90,16 @@
                 source = config.ghaf.security.sshKeys.waypipeSshPublicKeyDir;
                 mountPoint = config.ghaf.security.sshKeys.waypipeSshPublicKeyDir;
               }
+            ] ++ lib.optionals (config.ghaf.givc.enable && config.ghaf.givc.enableTls) [
+              {
+                tag = "givc";
+                source = "/etc/givc/${vmName}";
+                mountPoint = "/tmp/givc";
+                proto = "virtiofs";
+              }
             ];
           writableStoreOverlay = lib.mkIf config.ghaf.development.debug.tools.enable "/nix/.rw-store";
+
           qemu = {
             machine =
               {

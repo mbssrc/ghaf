@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 {
-  pkgs,
   lib,
+  pkgs,
   config,
   ...
 }: let
@@ -92,6 +92,11 @@ in {
       };
 
       microvm.qemu.extraArgs = lib.optionals config.ghaf.hardware.usb.external.enable config.ghaf.hardware.usb.external.qemuExtraArgs.gps-device;
+      ghaf.givc.appvm = {
+        enable = true;
+        name = lib.mkForce "element-vm";
+        applications = lib.mkForce ''{"element": "run-waypipe element-desktop --enable-features=UseOzonePlatform --ozone-platform=wayland"}'';
+      };
     }
   ];
   borderColor = "#337aff";

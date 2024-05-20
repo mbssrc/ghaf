@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 {
+  lib,
   pkgs,
   config,
   ...
@@ -16,6 +17,11 @@
       imports = [../programs/zathura.nix];
       time.timeZone = config.time.timeZone;
       ghaf.reference.programs.zathura.enable = true;
+      ghaf.givc.appvm = {
+        enable = true;
+        name = lib.mkForce "zathura-vm";
+        applications = lib.mkForce ''{"zathura": "run-waypipe zathura"}'';
+      };
     }
   ];
   borderColor = "#122263";

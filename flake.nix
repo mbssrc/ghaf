@@ -125,6 +125,16 @@
         flake-compat.follows = "flake-compat";
       };
     };
+
+    givc = {
+      url = "github:tiiuae/ghaf-givc";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+        devshell.follows = "devshell";
+        treefmt-nix.follows = "treefmt-nix";
+      };
+    };
   };
 
   outputs = inputs @ {flake-parts, ...}: let

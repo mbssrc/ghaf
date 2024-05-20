@@ -43,6 +43,7 @@
             withDebug = config.ghaf.profiles.debug.enable;
             withHardenedConfigs = true;
           };
+          givc.guivm.enable = true;
         };
 
         systemd.services."waypipe-ssh-keygen" = let
@@ -108,7 +109,15 @@
               source = "/nix/store";
               mountPoint = "/nix/.ro-store";
             }
-          ];
+          ]
+            ++ lib.optionals (config.ghaf.givc.enable && config.ghaf.givc.enableTls) [
+              {
+                tag = "givc";
+                source = "/etc/givc/${vmName}";
+                mountPoint = "/tmp/givc";
+                proto = "virtiofs";
+              }
+            ];
           writableStoreOverlay = lib.mkIf config.ghaf.development.debug.tools.enable "/nix/.rw-store";
 
           qemu = {

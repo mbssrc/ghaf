@@ -30,28 +30,31 @@ in {
         inherit
           (pkgs)
           # For lspci:
-          
+
           pciutils
           # For lsusb:
-          
+
           usbutils
           # Useful in NetVM
-          
+
           ethtool
           # Basic monitors
-          
+
           iftop
           iotop
           traceroute
           dig
           evtest
           # For deleting Linux Boot Manager entries in automated testing
-          
+
           efibootmgr
           # Performance testing
-          
+
           speedtest-cli
           iperf
+
+          # Grpc testing
+          grpcurl
           ;
       }
       ++

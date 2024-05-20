@@ -29,10 +29,15 @@ in {
       profiles.graphics.compositor = "labwc";
       graphics = {
         launchers = let
-          hostEntry = filter (x: x.name == "ghaf-host-debug") config.ghaf.networking.hosts.entries;
-          hostAddress = head (map (x: x.ip) hostEntry);
-          powerControl = pkgs.callPackage ../../../packages/powercontrol {};
-          privateSshKeyPath = config.ghaf.security.sshKeys.sshKeyPath;
+          appStarterArgs = builtins.replaceStrings ["\n"] [" "] ''
+            -host ${config.ghaf.givc.adminConfig.name}
+            -ip ${config.ghaf.givc.adminConfig.addr}
+            -port ${config.ghaf.givc.adminConfig.port}
+            -ca /run/givc/ca-cert.pem
+            -cert /run/givc/gui-vm-cert.pem
+            -key /run/givc/gui-vm-key.pem
+            ${lib.optionalString (!config.ghaf.givc.enableTls) "-notls"}
+          '';
         in
           [
             {
@@ -42,32 +47,32 @@ in {
               name = "Chromium";
               path =
                 if isIdsvmEnabled
-                then "${pkgs.openssh}/bin/ssh -i ${privateSshKeyPath} -o StrictHostKeyChecking=no chromium-vm run-waypipe chromium --enable-features=UseOzonePlatform --ozone-platform=wayland --user-data-dir=/home/${config.ghaf.users.accounts.user}/.config/chromium/Default --ignore-certificate-errors-spki-list=Bq49YmAq1CG6FuBzp8nsyRXumW7Dmkp7QQ/F82azxGU="
-                else "${pkgs.openssh}/bin/ssh -i ${privateSshKeyPath} -o StrictHostKeyChecking=no chromium-vm run-waypipe chromium --enable-features=UseOzonePlatform --ozone-platform=wayland";
+                then "${pkgs.givc-app}/bin/givc-app -name chromium-ids ${appStarterArgs}"
+                else "${pkgs.givc-app}/bin/givc-app -name chromium ${appStarterArgs}";
               icon = "${pkgs.icon-pack}/chromium.svg";
             }
 
             {
               name = "GALA";
-              path = "${pkgs.openssh}/bin/ssh -i ${privateSshKeyPath} -o StrictHostKeyChecking=no gala-vm run-waypipe gala --enable-features=UseOzonePlatform --ozone-platform=wayland";
+              path = "${pkgs.givc-app}/bin/givc-app -name gala ${appStarterArgs}";
               icon = "${pkgs.icon-pack}/distributor-logo-android.svg";
             }
 
             {
               name = "PDF Viewer";
-              path = "${pkgs.openssh}/bin/ssh -i ${privateSshKeyPath} -o StrictHostKeyChecking=no zathura-vm run-waypipe zathura";
+              path = "${pkgs.givc-app}/bin/givc-app -name zathura ${appStarterArgs}";
               icon = "${pkgs.icon-pack}/document-viewer.svg";
             }
 
             {
               name = "Element";
-              path = "${pkgs.openssh}/bin/ssh -i ${privateSshKeyPath} -o StrictHostKeyChecking=no element-vm run-waypipe element-desktop --enable-features=UseOzonePlatform --ozone-platform=wayland";
+              path = "${pkgs.givc-app}/bin/givc-app -name element ${appStarterArgs}";
               icon = "${pkgs.icon-pack}/element-desktop.svg";
             }
 
             {
               name = "AppFlowy";
-              path = "${pkgs.openssh}/bin/ssh -i ${privateSshKeyPath} -o StrictHostKeyChecking=no appflowy-vm run-waypipe appflowy";
+              path = "${pkgs.givc-app}/bin/givc-app -name appflowy ${appStarterArgs}";
               icon = "${pkgs.appflowy}/opt/data/flutter_assets/assets/images/flowy_logo.svg";
             }
 
@@ -79,41 +84,15 @@ in {
 
             {
               name = "Shutdown";
-              path = "${powerControl.makePowerOffCommand {
-                inherit hostAddress;
-                inherit privateSshKeyPath;
-              }}";
+              path = "${pkgs.givc-app}/bin/givc-app -name poweroff ${appStarterArgs}";
               icon = "${pkgs.icon-pack}/system-shutdown.svg";
             }
 
             {
               name = "Reboot";
-              path = "${powerControl.makeRebootCommand {
-                inherit hostAddress;
-                inherit privateSshKeyPath;
-              }}";
+              path = "${pkgs.givc-app}/bin/givc-app -name reboot ${appStarterArgs}";
               icon = "${pkgs.icon-pack}/system-reboot.svg";
             }
-
-            # Temporarly disabled as it fails to turn off display when suspended
-            # {
-            #   name = "Suspend";
-            #   path = "${powerControl.makeSuspendCommand {
-            #     inherit hostAddress;
-            #     inherit privateSshKeyPath;
-            #   }}";
-            #   icon = "${pkgs.icon-pack}/system-suspend.svg";
-            # }
-
-            # Temporarly disabled as it doesn't work at all
-            # {
-            #   name = "Hibernate";
-            #   path = "${powerControl.makeHibernateCommand {
-            #     inherit hostAddress;
-            #     inherit privateSshKeyPath;
-            #   }}";
-            #   icon = "${pkgs.icon-pack}/system-suspend-hibernate.svg";
-            # }
           ]
           ++ optionals (hasAttr "spice-host" winConfig) [
             {
