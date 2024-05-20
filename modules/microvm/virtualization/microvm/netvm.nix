@@ -9,6 +9,9 @@
   configHost = config;
   vmName = "net-vm";
   macAddress = "02:00:00:01:01:01";
+
+  ramMb = 4092;
+
   netvmBaseConfiguration = {
     imports = [
       (import ./common/vm-networking.nix {inherit vmName macAddress;})
