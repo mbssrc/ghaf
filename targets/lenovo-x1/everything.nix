@@ -76,6 +76,15 @@
             services.openssh = config.ghaf.security.sshKeys.sshAuthorizedKeysCommand;
 
             disko.devices.disk = config.ghaf.hardware.definition.disks;
+            boot.kernelPatches = [
+              {
+                name = "bpf_config";
+                patch = null;
+
+                extraStructuredConfig.FUNCTION_ERROR_INJECTION = lib.kernel.yes;
+                extraStructuredConfig.BPF_KPROBE_OVERRIDE = lib.kernel.yes;
+              }
+            ];
 
             ghaf = {
               hardware.definition = hwDefinition;

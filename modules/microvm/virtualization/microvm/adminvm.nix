@@ -29,11 +29,9 @@
         nixpkgs.buildPlatform.system = configHost.nixpkgs.buildPlatform.system;
         nixpkgs.hostPlatform.system = configHost.nixpkgs.hostPlatform.system;
 
-        environment.systemPackages =
-          let
-            tetragon = pkgs.callPackage ../../../../packages/tetragon {};
-          in
-            [ tetragon ];
+        environment.systemPackages = let
+          tetragon = pkgs.callPackage ../../../../packages/tetragon {};
+        in [tetragon];
 
         systemd.network = {
           enable = true;
@@ -95,5 +93,4 @@ in {
       specialArgs = {inherit lib;};
     };
   };
-
 }
