@@ -19,16 +19,12 @@
           self.nixosModules.reference-programs
           self.nixosModules.reference-services
           self.nixosModules.profiles
+          self.nixosModules.laptop
 
           (_: {
             time.timeZone = "Asia/Dubai";
 
             ghaf = {
-              # TODO:Hardware definitions get rid of this generation stuff
-              # pass them as modules directly in extramodules
-              hardware = {
-                inherit generation;
-              };
 
               profiles = {
                 laptop-x86.enable = true;
@@ -68,8 +64,20 @@
     package = hostConfiguration.config.system.build.diskoImages;
   };
 in [
-  (lenovo-x1 "gen10" "debug" [self.nixosModules.disko-lenovo-x1-basic-v1 self.nixosModules.hw-lenovo-x1])
-  (lenovo-x1 "gen11" "debug" [self.nixosModules.disko-lenovo-x1-basic-v1 self.nixosModules.hw-lenovo-x1])
-  (lenovo-x1 "gen10" "release" [self.nixosModules.disko-lenovo-x1-basic-v1 self.nixosModules.hw-lenovo-x1])
-  (lenovo-x1 "gen11" "release" [self.nixosModules.disko-lenovo-x1-basic-v1 self.nixosModules.hw-lenovo-x1])
+  (lenovo-x1 "gen10" "debug" [
+    self.nixosModules.disko-lenovo-x1-basic-v1
+    ({ ghaf.hardware.definition.configFile = "/lenovo-x1/definitions/x1-gen10.nix"; })
+  ])
+  (lenovo-x1 "gen11" "debug" [
+    self.nixosModules.disko-lenovo-x1-basic-v1
+    ({ ghaf.hardware.definition.configFile = "/lenovo-x1/definitions/x1-gen11.nix"; })
+  ])
+  (lenovo-x1 "gen10" "release" [
+    self.nixosModules.disko-lenovo-x1-basic-v1
+    ({ ghaf.hardware.definition.configFile = "/lenovo-x1/definitions/x1-gen10.nix"; })
+  ])
+  (lenovo-x1 "gen11" "release" [
+    self.nixosModules.disko-lenovo-x1-basic-v1
+    ({ ghaf.hardware.definition.configFile = "/lenovo-x1/definitions/x1-gen11.nix"; })
+  ])
 ]
