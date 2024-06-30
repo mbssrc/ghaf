@@ -25,7 +25,7 @@ in {
       inherit (config.ghaf.givc.adminConfig) port;
       inherit (config.ghaf.givc.adminConfig) protocol;
       services = [
-        "givc-ghaf-host.service"
+        "givc-ghaf-host-debug.service"
         "givc-net-vm.service"
         "givc-gui-vm.service"
         "givc-audio-vm.service"

@@ -8,6 +8,8 @@
 }: let
   cfg = config.ghaf.givc.appvm;
   inherit (lib) mkOption mkEnableOption mkIf types;
+  vmEntry = vm: builtins.filter (x: x.name == vm) config.ghaf.networking.hosts.entries;
+  address = vm: lib.head (builtins.map (x: x.ip) (vmEntry vm));
 in {
   options.ghaf.givc.appvm = {
     enable = mkEnableOption "Enable appvm givc module.";
@@ -29,7 +31,7 @@ in {
       enable = true;
       inherit (cfg) name;
       inherit (cfg) applications;
-      addr = "dynamic";
+      addr = address cfg.name;
       port = "9000";
       tls = {
         enable = config.ghaf.givc.enableTls;

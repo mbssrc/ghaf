@@ -90,7 +90,8 @@
                 source = config.ghaf.security.sshKeys.waypipeSshPublicKeyDir;
                 mountPoint = config.ghaf.security.sshKeys.waypipeSshPublicKeyDir;
               }
-            ] ++ lib.optionals (config.ghaf.givc.enable && config.ghaf.givc.enableTls) [
+            ]
+            ++ lib.optionals (config.ghaf.givc.enable && config.ghaf.givc.enableTls) [
               {
                 tag = "givc";
                 source = "/etc/givc/${vmName}";

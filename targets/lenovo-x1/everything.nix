@@ -34,6 +34,11 @@
           }: let
             powerControl = pkgs.callPackage ../../packages/powercontrol {};
           in {
+            # Temporary solution to include givc-app to pkgs
+            nixpkgs.overlays = [
+              self.inputs.givc.overlays.default
+            ];
+
             security.polkit = {
               enable = true;
               extraConfig = powerControl.polkitExtraConfig;

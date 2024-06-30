@@ -3,7 +3,7 @@
 {inputs, ...}: {
   flake.nixosModules = {
     givc-adminvm.imports = [
-      inputs.givc.nixosModules.admin
+      inputs.givc.nixosModules.admin-go
       ./common.nix
       ./adminvm.nix
     ];
@@ -32,8 +32,5 @@
       ./common.nix
       ./appvm.nix
     ];
-  };
-  flake.overlays = {
-    givc-app = inputs.givc.overlays.default;
   };
 }

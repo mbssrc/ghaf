@@ -8,6 +8,8 @@
 }: let
   cfg = config.ghaf.givc;
   inherit (lib) mkOption mkIf mkDefault types;
+  adminvmEntry = builtins.filter (x: x.name == "admin-vm-debug") config.ghaf.networking.hosts.entries;
+  addr = lib.head (builtins.map (x: x.ip) adminvmEntry);
 in {
   options.ghaf.givc = {
     enable = mkOption {
@@ -47,8 +49,8 @@ in {
   config = mkIf cfg.enable {
     # Givc admin server configuration
     ghaf.givc.adminConfig = {
-      name = "admin-vm";
-      addr = "192.168.101.10";
+      name = "admin-vm-debug";
+      inherit addr;
       port = "9001";
       protocol = "tcp";
     };

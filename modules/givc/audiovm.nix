@@ -7,6 +7,9 @@
 }: let
   cfg = config.ghaf.givc.audiovm;
   inherit (lib) mkOption mkIf types;
+  hostName = "audio-vm";
+  audiovmEntry = builtins.filter (x: x.name == hostName) config.ghaf.networking.hosts.entries;
+  addr = lib.head (builtins.map (x: x.ip) audiovmEntry);
 in {
   options.ghaf.givc.audiovm = {
     enable = mkOption {
@@ -20,8 +23,8 @@ in {
     # Configure audiovm service
     givc.sysvm = {
       enable = true;
-      name = "audio-vm";
-      addr = "192.168.101.5";
+      name = hostName;
+      inherit addr;
       port = "9000";
       services = [
         "poweroff.target"
@@ -30,8 +33,8 @@ in {
       tls = {
         enable = config.ghaf.givc.enableTls;
         caCertPath = "/run/givc/ca-cert.pem";
-        certPath = "/run/givc/audio-vm-cert.pem";
-        keyPath = "/run/givc/audio-vm-key.pem";
+        certPath = "/run/givc/${hostName}-cert.pem";
+        keyPath = "/run/givc/${hostName}-key.pem";
       };
       admin = config.ghaf.givc.adminConfig;
     };

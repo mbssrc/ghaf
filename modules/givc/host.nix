@@ -8,7 +8,11 @@
   ...
 }: let
   cfg = config.ghaf.givc.host;
-  inherit (lib) mkEnableOption mkIf;
+  inherit (builtins) map filter concatStringsSep;
+  inherit (lib) mkEnableOption mkIf forEach;
+  hostName = "ghaf-host-debug";
+  getIp = name: lib.head (map (x: x.ip) (filter (x: x.name == name) config.ghaf.networking.hosts.entries));
+  addr = getIp hostName;
 in {
   options.ghaf.givc.host = {
     enable = mkEnableOption "Enable host givc module.";
@@ -18,8 +22,8 @@ in {
     # Configure host service
     givc.host = {
       enable = true;
-      name = "ghaf-host";
-      addr = "192.168.101.2";
+      name = hostName;
+      inherit addr;
       port = "9000";
       services = [
         "microvm@chromium-vm.service"
@@ -35,8 +39,8 @@ in {
       tls = {
         enable = config.ghaf.givc.enableTls;
         caCertPath = "/etc/givc/ca/ca-cert.pem";
-        certPath = "/etc/givc/ghaf-host/ghaf-host-cert.pem";
-        keyPath = "/etc/givc/ghaf-host/ghaf-host-key.pem";
+        certPath = "/etc/givc/${hostName}/${hostName}-cert.pem";
+        keyPath = "/etc/givc/${hostName}/${hostName}-key.pem";
       };
       admin = config.ghaf.givc.adminConfig;
     };
@@ -45,14 +49,20 @@ in {
 
     # Generate keys and certificates for givc, if they don't exist
     systemd.services = {
-      "givc-keygen" = let
+      "givc-setup" = let
         givcCertGen = pkgs.writeShellScriptBin "gen_certs" ''
           set -xeuo pipefail
+
+          # Parameters
+          VALIDITY=3650
+          CONSTRAINTS="basicConstraints=critical,CA:true,pathlen:1"
+          GIVC_DIRECTORY="/etc/givc"
+          CA_DIRECTORY="''${GIVC_DIRECTORY}/ca"
 
           # Function to create key/cert based on IP and/or DNS
           gen_cert(){
               name="$1"
-              path=/etc/givc/"$name"
+              path="''${GIVC_DIRECTORY}/''${name}"
               mkdir -p "$path"
 
               usage="extendedKeyUsage=serverAuth,clientAuth"
@@ -64,10 +74,10 @@ in {
               fi
               ${pkgs.openssl}/bin/openssl genpkey -algorithm ED25519 -out "$path"/"$name"-key.pem
               ${pkgs.openssl}/bin/openssl req -new -key "$path"/"$name"-key.pem -out "$path"/"$name"-csr.pem -subj "/CN=''${name}" -addext "$alttext" -addext "$usage"
-              ${pkgs.openssl}/bin/openssl x509 -req -in "$path"/"$name"-csr.pem -CA $ca_dir/ca-cert.pem -CAkey $ca_dir/ca-key.pem -CAcreateserial -out "$path"/"$name"-cert.pem -extfile <(printf "%s" "$alttext") -days $VALIDITY
+              ${pkgs.openssl}/bin/openssl x509 -req -in "$path"/"$name"-csr.pem -CA $CA_DIRECTORY/ca-cert.pem -CAkey $CA_DIRECTORY/ca-key.pem -CAcreateserial -out "$path"/"$name"-cert.pem -extfile <(printf "%s" "$alttext") -days $VALIDITY
 
-              cp $ca_dir/ca-cert.pem "$path"/ca-cert.pem
-              if [ "$name" == "ghaf-host" ]; then
+              cp $CA_DIRECTORY/ca-cert.pem "$path"/ca-cert.pem
+              if [ "$name" == "ghaf-host-debug" ]; then
                 chown -R root:root "$path"
                 chmod -R 400 "$path"
               else
@@ -78,26 +88,15 @@ in {
           }
 
           # Create CA
-          VALIDITY=3650
-          CONSTRAINTS="basicConstraints=critical,CA:true,pathlen:1"
-          ca_dir="/etc/givc/ca"
-          mkdir -p $ca_dir
-          ${pkgs.openssl}/bin/openssl genpkey -algorithm ED25519 -out $ca_dir/ca-key.pem
-          ${pkgs.openssl}/bin/openssl req -x509 -new -key $ca_dir/ca-key.pem -out $ca_dir/ca-cert.pem -subj "/CN=GivcCA" -addext $CONSTRAINTS -days $VALIDITY
-          chmod -R 400 $ca_dir
+          mkdir -p $CA_DIRECTORY
+          ${pkgs.openssl}/bin/openssl genpkey -algorithm ED25519 -out $CA_DIRECTORY/ca-key.pem
+          ${pkgs.openssl}/bin/openssl req -x509 -new -key $CA_DIRECTORY/ca-key.pem -out $CA_DIRECTORY/ca-cert.pem -subj "/CN=GivcCA" -addext $CONSTRAINTS -days $VALIDITY
+          chmod -R 400 $CA_DIRECTORY
 
           # Generate keys/certificates
-          gen_cert "ghaf-host" "192.168.101.2"
-          gen_cert "admin-vm" "192.168.101.10"
-          gen_cert "net-vm" "192.168.101.1"
-          gen_cert "gui-vm" "192.168.101.3"
-          gen_cert "ids-vm" "192.168.101.4"
-          gen_cert "audio-vm" "192.168.101.5"
-          gen_cert "element-vm" "192.168.100.253"
-          gen_cert "chromium-vm"
-          gen_cert "gala-vm"
-          gen_cert "zathura-vm"
-          gen_cert "appflowy-vm"
+          ${concatStringsSep "\n" (forEach config.ghaf.networking.hosts.entries (
+            entry: "gen_cert ${entry.name} ${entry.ip}"
+          ))}
 
           /run/current-system/systemd/bin/systemd-notify --ready
         '';

@@ -6,8 +6,8 @@
   pkgs,
   ...
 }: let
-  inherit (builtins) filter map hasAttr;
-  inherit (lib) mkIf mkEnableOption head any optionals optionalAttrs;
+  inherit (builtins) hasAttr replaceStrings;
+  inherit (lib) mkIf mkEnableOption any optionals optionalAttrs optionalString;
   cfg = config.ghaf.services.desktop;
 
   winConfig =
@@ -29,14 +29,14 @@ in {
       profiles.graphics.compositor = "labwc";
       graphics = {
         launchers = let
-          appStarterArgs = builtins.replaceStrings ["\n"] [" "] ''
+          appStarterArgs = replaceStrings ["\n"] [" "] ''
             -host ${config.ghaf.givc.adminConfig.name}
             -ip ${config.ghaf.givc.adminConfig.addr}
             -port ${config.ghaf.givc.adminConfig.port}
             -ca /run/givc/ca-cert.pem
             -cert /run/givc/gui-vm-cert.pem
             -key /run/givc/gui-vm-key.pem
-            ${lib.optionalString (!config.ghaf.givc.enableTls) "-notls"}
+            ${optionalString (!config.ghaf.givc.enableTls) "-notls"}
           '';
         in
           [

@@ -68,7 +68,7 @@
             ++ lib.optionals (config.ghaf.givc.enable && config.ghaf.givc.enableTls) [
               {
                 tag = "givc";
-                source = "/etc/givc/${vmName}";
+                source = "/etc/givc/${config.ghaf.givc.adminConfig.name}";
                 mountPoint = "/tmp/givc";
                 proto = "virtiofs";
               }

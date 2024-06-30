@@ -8,6 +8,9 @@
 }: let
   cfg = config.ghaf.givc.netvm;
   inherit (lib) mkOption mkIf types;
+  hostName = "net-vm";
+  netvmEntry = builtins.filter (x: x.name == hostName) config.ghaf.networking.hosts.entries;
+  addr = lib.head (builtins.map (x: x.ip) netvmEntry);
 in {
   options.ghaf.givc.netvm = {
     enable = mkOption {
@@ -21,8 +24,8 @@ in {
     # Configure netvm service
     givc.sysvm = {
       enable = true;
-      name = "net-vm";
-      addr = "192.168.101.1";
+      name = hostName;
+      inherit addr;
       port = "9000";
       services = [
         "poweroff.target"
@@ -31,8 +34,8 @@ in {
       tls = {
         enable = config.ghaf.givc.enableTls;
         caCertPath = "/run/givc/ca-cert.pem";
-        certPath = "/run/givc/net-vm-cert.pem";
-        keyPath = "/run/givc/net-vm-key.pem";
+        certPath = "/run/givc/${hostName}-cert.pem";
+        keyPath = "/run/givc/${hostName}-key.pem";
       };
       admin = config.ghaf.givc.adminConfig;
     };

@@ -98,18 +98,19 @@
           vcpu = 2;
           mem = 2048;
           hypervisor = "qemu";
-          shares = [
-            {
-              tag = "rw-waypipe-ssh-public-key";
-              source = config.ghaf.security.sshKeys.waypipeSshPublicKeyDir;
-              mountPoint = config.ghaf.security.sshKeys.waypipeSshPublicKeyDir;
-            }
-            {
-              tag = "ro-store";
-              source = "/nix/store";
-              mountPoint = "/nix/.ro-store";
-            }
-          ]
+          shares =
+            [
+              {
+                tag = "rw-waypipe-ssh-public-key";
+                source = config.ghaf.security.sshKeys.waypipeSshPublicKeyDir;
+                mountPoint = config.ghaf.security.sshKeys.waypipeSshPublicKeyDir;
+              }
+              {
+                tag = "ro-store";
+                source = "/nix/store";
+                mountPoint = "/nix/.ro-store";
+              }
+            ]
             ++ lib.optionals (config.ghaf.givc.enable && config.ghaf.givc.enableTls) [
               {
                 tag = "givc";

@@ -7,6 +7,9 @@
 }: let
   cfg = config.ghaf.givc.guivm;
   inherit (lib) mkOption mkIf types;
+  hostName = "gui-vm";
+  guivmEntry = builtins.filter (x: x.name == hostName) config.ghaf.networking.hosts.entries;
+  addr = lib.head (builtins.map (x: x.ip) guivmEntry);
 in {
   options.ghaf.givc.guivm = {
     enable = mkOption {
@@ -20,8 +23,8 @@ in {
     # Configure guivm service
     givc.sysvm = {
       enable = true;
-      name = "gui-vm";
-      addr = "192.168.101.3";
+      name = hostName;
+      inherit addr;
       port = "9000";
       services = [
         "poweroff.target"
@@ -30,8 +33,8 @@ in {
       tls = {
         enable = config.ghaf.givc.enableTls;
         caCertPath = "/run/givc/ca-cert.pem";
-        certPath = "/run/givc/gui-vm-cert.pem";
-        keyPath = "/run/givc/gui-vm-key.pem";
+        certPath = "/run/givc/${hostName}-cert.pem";
+        keyPath = "/run/givc/${hostName}-key.pem";
       };
       admin = config.ghaf.givc.adminConfig;
     };
