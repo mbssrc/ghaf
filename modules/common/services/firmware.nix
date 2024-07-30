@@ -3,6 +3,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }: let
   cfg = config.ghaf.services.firmware;
@@ -10,11 +11,20 @@
 in {
   options.ghaf.services.firmware = {
     enable = mkEnableOption "PLaceholder for firmware handling";
+    graphics = mkEnableOption "Enable graphics firmware";
   };
   config = mkIf cfg.enable {
     hardware = {
       enableRedistributableFirmware = true;
       enableAllFirmware = true;
     };
+    hardware.graphics = mkIf cfg.graphics {
+      enable = true;
+      extraPackages = [
+        pkgs.intel-media-sdk
+        pkgs.intel-media-driver # For Broadwell (2014) or newer processors. LIBVA_DRIVER_NAME=iHD
+      ];
+    };
+    environment.sessionVariables = mkIf cfg.graphics {LIBVA_DRIVER_NAME = "iHD";};
   };
 }

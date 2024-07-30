@@ -12,13 +12,20 @@
   ];
 
   host = {
-    kernelConfig.kernelParams = [
-      "intel_iommu=on,sm_on"
-      "iommu=pt"
-      "module_blacklist=i915" # Prevent i915 module from being accidentally used by host
-      "acpi_backlight=vendor"
-      "acpi_osi=linux"
-    ];
+    kernelConfig = {
+      kernelParams = [
+        "intel_iommu=on,sm_on"
+        "iommu=pt"
+        # "module_blacklist=i915" # Prevent i915 module from being accidentally used by host
+        "acpi_backlight=vendor"
+        "acpi_osi=linux"
+        # "nomodeset"
+        # "quiet"
+        # "loglevel=0"
+        # "pci-stub.ids=8086:a7a1"
+        "split_lock_detect=off"
+      ];
+    };
   };
 
   input = {
@@ -83,14 +90,18 @@
     pciDevices = [
       {
         # Passthrough Intel Iris GPU
-        path = "0000:00:02.0";
+        path = "0000:00:02.1";
         vendorId = "8086";
         productId = "a7a1";
       }
     ];
     kernelConfig = {
-      stage1.kernelModules = ["i915"];
-      kernelParams = ["earlykms"];
+      stage1.kernelModules = [
+        "i915"
+      ];
+      kernelParams = [
+        "earlykms"
+      ];
     };
   };
 

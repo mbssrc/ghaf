@@ -29,6 +29,7 @@
           };
           # To enable screen locking set to true
           graphics.labwc.autolock.enable = false;
+          graphics.boot.enable = true;
           development = {
             ssh.daemon.enable = lib.mkDefault config.ghaf.development.ssh.daemon.enable;
             debug.tools.enable = lib.mkDefault config.ghaf.development.debug.tools.enable;
@@ -76,6 +77,7 @@
             ++ [
               pkgs.nm-launcher
               pkgs.pamixer
+              pkgs.intel-gpu-tools
             ]
             ++ (lib.optional (config.ghaf.profiles.debug.enable && config.ghaf.virtualization.microvm.idsvm.mitmproxy.enable) pkgs.mitmweb-ui);
         };
@@ -115,6 +117,10 @@
             extraArgs = [
               "-device"
               "vhost-vsock-pci,guest-cid=${toString cfg.vsockCID}"
+              # "-drive"
+              # "file=${pkgs.OVMF.fd}/FV/OVMF_CODE.fd,if=pflash,unit=0,readonly=true"
+              # "-drive"
+              # "file=${pkgs.OVMF.fd}/FV/OVMF_VARS.fd,if=pflash,unit=1,readonly=true"
             ];
 
             machine =

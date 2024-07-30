@@ -6,6 +6,9 @@
   ...
 }: let
   inherit (lib) mkOption types mkForce;
+
+  gpus = config.ghaf.hardware.definition.gpu.pciDevices;
+  guivmGpu = lib.singleton (lib.head gpus);
 in {
   options.ghaf.hardware.devices = {
     netvmPCIPassthroughModule = mkOption {
@@ -57,7 +60,7 @@ in {
             bus = "pci";
             inherit (d) path;
           })
-          config.ghaf.hardware.definition.gpu.pciDevices
+          guivmGpu
         );
         ghaf.hardware.definition.gpu.pciDevices = config.ghaf.hardware.definition.gpu.pciDevices;
       };

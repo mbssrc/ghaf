@@ -39,8 +39,14 @@
   };
 
   # Firmware module
-  firmwareModule = {
-    config.ghaf.services.firmware.enable = true;
+  firmwareModules = {
+    generic = {
+      config.ghaf.services.firmware.enable = true;
+    };
+    graphics = {
+      config.ghaf.services.firmware.enable = true;
+      config.ghaf.services.firmware.graphics = true;
+    };
   };
 
   # Qemu configuration modules
@@ -145,7 +151,7 @@ in {
       # Netvm modules
       netvm.extraModules = optionals cfg.netvm.enable [
         deviceModules.netvmPCIPassthroughModule
-        firmwareModule
+        firmwareModules.generic
         serviceModules.wifi
         referenceServiceModule
       ];
@@ -160,7 +166,7 @@ in {
         deviceModules.guivmPCIPassthroughModule
         deviceModules.guivmVirtioInputHostEvdevModule
         kernelConfigs.guivm
-        firmwareModule
+        firmwareModules.graphics
         qemuModules.guivm
         serviceModules.desktop
         serviceModules.fprint

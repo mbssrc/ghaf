@@ -9,6 +9,17 @@
 }: let
   inherit (lib) hasAttr optionals;
   xdgPdfPort = 1200;
+
+  # Intel SR-IOV module
+  i915 = pkgs.callPackage ../../../packages/sr-iov/default.nix {
+    inherit (pkgs) lib stdenv fetchFromGitHub writeShellScriptBin;
+    inherit (config.boot.kernelPackages) kernel;
+  };
+  i915-sriov-guest-params = [
+    "intel_iommu=on"
+    "i915.enable_guc=3"
+    "i915.max_vfs=7"
+  ];
 in {
   name = "chromium";
   packages = let
@@ -31,6 +42,7 @@ in {
     pkgs.xdg-utils
     xdgPdfItem
     xdgOpenPdf
+    pkgs.intel-gpu-tools
   ];
   # TODO create a repository of mac addresses to avoid conflicts
   macAddress = "02:00:00:03:05:01";
@@ -58,15 +70,53 @@ in {
 
       time.timeZone = config.time.timeZone;
 
-      microvm.qemu.extraArgs = optionals (config.ghaf.hardware.usb.internal.enable
-        && (hasAttr "cam0" config.ghaf.hardware.usb.internal.qemuExtraArgs))
-      config.ghaf.hardware.usb.internal.qemuExtraArgs.cam0;
-      microvm.devices = [];
+      microvm.qemu.extraArgs =
+        optionals (config.ghaf.hardware.usb.internal.enable
+          && (hasAttr "cam0" config.ghaf.hardware.usb.internal.qemuExtraArgs))
+        config.ghaf.hardware.usb.internal.qemuExtraArgs.cam0;
 
       ghaf.reference.programs.chromium.enable = true;
 
       # Set default PDF XDG handler
       xdg.mime.defaultApplications."application/pdf" = "ghaf-pdf.desktop";
+
+      boot = {
+        initrd = {
+          availableKernelModules = ["i915"];
+          kernelModules = ["i915"];
+        };
+        extraModulePackages = [i915];
+        kernelParams = ["earlykms"] ++ i915-sriov-guest-params;
+        kernelPackages = pkgs.linuxPackages_latest;
+        kernelPatches = lib.singleton {
+          name = "i915-sriov";
+          patch = null;
+          extraStructuredConfig = {
+            INTEL_MEI_PXP = lib.kernel.module;
+            DRM_I915_PXP = lib.kernel.yes;
+          };
+        };
+      };
+      hardware.graphics = {
+        enable = true;
+        extraPackages = [
+          pkgs.intel-media-sdk
+          pkgs.intel-media-driver # For Broadwell (2014) or newer processors. LIBVA_DRIVER_NAME=iHD
+        ];
+      };
+      environment.sessionVariables = {LIBVA_DRIVER_NAME = "iHD";};
+      microvm.devices = builtins.map (d: {
+          bus = "pci";
+          inherit (d) path;
+        })
+        [
+          {
+            # Passthrough Intel Iris GPU
+            path = "0000:00:02.2";
+            vendorId = "8086";
+            productId = "a7a1";
+          }
+        ];
     }
   ];
   borderColor = "#630505";

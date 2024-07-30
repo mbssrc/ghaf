@@ -17,6 +17,10 @@
       windows-launcher = callPackage ./windows-launcher {enableSpice = false;};
       windows-launcher-spice = callPackage ./windows-launcher {enableSpice = true;};
       hardware-scan = callPackage ./hardware-scan {};
+      i915-sriov-dkms = callPackage ./sr-iov {
+        inherit (pkgs) lib stdenv fetchFromGitHub writeShellScriptBin;
+        inherit (pkgs.linuxPackages_latest) kernel;
+      };
       doc = callPackage ../docs {
         revision = lib.strings.fileContents ../.version;
         # options = ;
