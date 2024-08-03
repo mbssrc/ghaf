@@ -46,6 +46,7 @@
   # Qemu configuration modules
   qemuModules = {
     inherit (config.ghaf.qemu) guivm;
+    inherit (config.ghaf.qemu) audiovm;
   };
 
   # Service modules
@@ -53,6 +54,11 @@
     # Audio module
     audio = optionalAttrs cfg.audiovm.audio {
       config.ghaf.services.audio.enable = true;
+    };
+
+    # Bluetooth module
+    bluetooth = optionalAttrs cfg.audiovm.audio {
+      config.ghaf.services.bluetooth.enable = true;
     };
 
     # Wifi module
@@ -153,7 +159,10 @@ in {
       audiovm.extraModules = optionals cfg.audiovm.enable [
         deviceModules.audiovmPCIPassthroughModule
         kernelConfigs.audiovm
+        firmwareModule
+        qemuModules.audiovm
         serviceModules.audio
+        serviceModules.bluetooth
       ];
       # Guivm modules
       guivm.extraModules = optionals cfg.guivm.enable [

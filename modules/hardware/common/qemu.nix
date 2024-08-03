@@ -15,6 +15,11 @@ in {
       default = {};
       description = "Extra qemu arguments for GuiVM";
     };
+    audiovm = mkOption {
+      type = types.attrs;
+      default = {};
+      description = "Extra qemu arguments for AudioVM";
+    };
   };
 
   config = {
@@ -35,6 +40,10 @@ in {
         config.ghaf.hardware.usb.external.qemuExtraArgs.yubikey
         ++ optionals (hasAttr "fpr0" config.ghaf.hardware.usb.internal.qemuExtraArgs)
         config.ghaf.hardware.usb.internal.qemuExtraArgs.fpr0;
+    };
+    ghaf.qemu.audiovm = optionalAttrs (hasAttr "hardware" config.ghaf) {
+      microvm.qemu.extraArgs = optionals (hasAttr "bt0" config.ghaf.hardware.usb.internal.qemuExtraArgs)
+        config.ghaf.hardware.usb.internal.qemuExtraArgs.bt0;
     };
   };
 }
