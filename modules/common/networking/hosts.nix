@@ -14,7 +14,6 @@ let
     ;
 
   # Internal network host entry
-  # TODO Add sockets
   hostEntrySubmodule = types.submodule {
     options = {
       name = mkOption {
@@ -41,6 +40,12 @@ let
           IPv6 address as string.
         '';
       };
+      cid = mkOption {
+        type = types.ints.u32;
+        description = ''
+          CID as unit32.
+        '';
+      };
     };
   };
 
@@ -56,13 +61,13 @@ let
   ipv6BaseAddress = "fd00::100:";
 
   # Generate host entries
-  # TODO Add sockets
   hosts =
     lib.lists.imap1 (idx: name: {
       inherit name;
       mac = "${macBaseAddress}${optionalString (idx < 16) "0"}${trivial.toHexString idx}";
       ipv4 = "${ipv4BaseAddress}${toString idx}";
       ipv6 = "${ipv6BaseAddress}${toString idx}";
+      cid = idx;
     }) hostList
     ++ lib.lists.imap1 (
       index: name:
@@ -74,6 +79,7 @@ let
         mac = "${macBaseAddress}${optionalString (idx < 16) "0"}${trivial.toHexString idx}";
         ipv4 = "${ipv4BaseAddress}${toString idx}";
         ipv6 = "${ipv6BaseAddress}${toString idx}";
+        cid = idx;
       }
     ) config.ghaf.common.appHosts;
 in

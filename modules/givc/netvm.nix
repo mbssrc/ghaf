@@ -11,6 +11,8 @@ let
   inherit (lib)
     mkEnableOption
     mkIf
+    head
+    filter
     ;
   guivmName = "gui-vm";
   inherit (config.ghaf.networking) hosts;
@@ -33,7 +35,7 @@ in
       };
       hwidService = true;
       tls.enable = config.ghaf.givc.enableTls;
-      admin = lib.head config.ghaf.givc.adminConfig.addresses;
+      admin = head (filter (entry: entry.protocol == "tcp") config.ghaf.givc.adminConfig.addresses);
       socketProxy = [
         {
           transport = {

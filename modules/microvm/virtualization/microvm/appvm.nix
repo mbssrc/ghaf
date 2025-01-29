@@ -17,7 +17,7 @@ let
     { vm, vmIndex }:
     let
       vmName = "${vm.name}-vm";
-      cid = if vm.cid > 0 then vm.cid else cfg.vsockBaseCID + vmIndex;
+      inherit (config.ghaf.networking.hosts.${vmName}) cid;
       # A list of applications for the GIVC service
       givcApplications = map (app: {
         name = app.givcName;
@@ -60,9 +60,7 @@ let
           (import ./common/waypipe.nix {
             inherit
               vm
-              vmIndex
               configHost
-              cid
               ;
           })
 
@@ -338,14 +336,6 @@ in
               '';
               default = [ ];
             };
-            cid = mkOption {
-              description = ''
-                VSOCK context identifier (CID) for the AppVM
-                Default value 0 means auto-assign using vsockBaseCID and AppVM index
-              '';
-              type = types.int;
-              default = 0;
-            };
             borderColor = mkOption {
               description = ''
                 Border color of the AppVM window
@@ -372,23 +362,12 @@ in
       default = [ ];
     };
 
-    # Base VSOCK CID which is used for auto assigning CIDs for all AppVMs
-    # For example, when it's set to 100, AppVMs will get 100, 101, 102, etc.
-    # It is also possible to override the auto assinged CID using the vms.cid option
-    vsockBaseCID = lib.mkOption {
-      type = lib.types.int;
-      default = 100;
-      description = ''
-        Context Identifier (CID) of the AppVM VSOCK
-      '';
-    };
-
     # Every AppVM has its own instance of Waypipe running in the GUIVM and
     # listening for incoming connections from the AppVM on its own port.
     # The port number each AppVM uses is waypipeBasePort + vmIndex.
     waypipeBasePort = lib.mkOption {
       type = lib.types.int;
-      default = 1100;
+      default = 1000;
       description = ''
         Waypipe base port number for AppVMs
       '';

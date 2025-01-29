@@ -12,6 +12,7 @@ let
   inherit (lib)
     mkEnableOption
     mkIf
+    filter
     head
     ;
   inherit (config.networking) hostName;
@@ -29,8 +30,9 @@ in
       inherit (config.ghaf.givc) debug;
       transport = {
         name = hostName;
-        addr = hosts.${hostName}.ipv4;
+        addr = toString config.ghaf.networking.hosts.${hostName}.cid;
         port = "9000";
+        protocol = "vsock";
       };
       services = [
         "reboot.target"
@@ -38,7 +40,7 @@ in
         "suspend.target"
       ] ++ map (vmName: "microvm@${vmName}.service") (attrNames config.microvm.vms);
       tls.enable = config.ghaf.givc.enableTls;
-      admin = head config.ghaf.givc.adminConfig.addresses;
+      admin = head (filter (entry: entry.protocol == "vsock") config.ghaf.givc.adminConfig.addresses);
     };
 
     givc.tls = {

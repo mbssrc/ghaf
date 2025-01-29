@@ -17,11 +17,11 @@ let
   addressSubmodule = types.submodule {
     options = {
       name = mkOption {
-        description = "Name of the IP range for parsing";
+        description = "Name of the admin server";
         type = types.str;
       };
       addr = mkOption {
-        description = "IP address of admin server";
+        description = "IPv4 address, unix socket, or CID (vsock) of admin server";
         type = types.str;
       };
       port = mkOption {
@@ -39,11 +39,17 @@ let
     };
   };
   inherit (config.ghaf.networking) hosts;
-  adminAddress = {
+  adminNetworkAddress = {
     name = "admin-vm";
     addr = hosts."admin-vm".ipv4;
     port = "9001";
     protocol = "tcp";
+  };
+  adminVsockAddress = {
+    name = "admin-vm";
+    addr = toString config.ghaf.networking.hosts."admin-vm".cid;
+    port = "9001";
+    protocol = "vsock";
   };
   mitmEnabled =
     config.ghaf.virtualization.microvm.idsvm.enable
@@ -94,9 +100,9 @@ in
       inherit idsExtraArgs;
       appPrefix = "/run/current-system/sw/bin";
       cliArgs = builtins.replaceStrings [ "\n" ] [ " " ] ''
-        --name ${adminAddress.name}
-        --addr ${adminAddress.addr}
-        --port ${adminAddress.port}
+        --name ${adminNetworkAddress.name}
+        --addr ${adminNetworkAddress.addr}
+        --port ${adminNetworkAddress.port}
         ${optionalString config.ghaf.givc.enableTls "--cacert /run/givc/ca-cert.pem"}
         ${optionalString config.ghaf.givc.enableTls "--cert /run/givc/cert.pem"}
         ${optionalString config.ghaf.givc.enableTls "--key /run/givc/key.pem"}
@@ -105,9 +111,10 @@ in
     };
     # Givc admin server configuration
     ghaf.givc.adminConfig = {
-      inherit (adminAddress) name;
+      inherit (adminNetworkAddress) name;
       addresses = [
-        adminAddress
+        adminNetworkAddress
+        adminVsockAddress
       ];
     };
   };

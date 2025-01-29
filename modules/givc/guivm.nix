@@ -10,6 +10,8 @@ let
   inherit (lib)
     mkEnableOption
     mkIf
+    head
+    filter
     ;
   netvmName = "net-vm";
   audiovmName = "audio-vm";
@@ -31,7 +33,7 @@ in
         addr = hosts.${hostName}.ipv4;
         port = "9000";
       };
-      admin = lib.head config.ghaf.givc.adminConfig.addresses;
+      admin = head (filter (entry: entry.protocol == "tcp") config.ghaf.givc.adminConfig.addresses);
       tls.enable = config.ghaf.givc.enableTls;
       enableUserTlsAccess = true;
       socketProxy = [

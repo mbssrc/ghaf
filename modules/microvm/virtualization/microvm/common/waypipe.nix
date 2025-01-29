@@ -1,10 +1,8 @@
 # Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 {
-  vmIndex,
   vm,
   configHost,
-  cid,
 }:
 {
   config,
@@ -15,7 +13,9 @@
 }:
 let
   cfg = config.ghaf.waypipe;
-  waypipePort = configHost.ghaf.virtualization.microvm.appvm.waypipeBasePort + vmIndex;
+  inherit (config.ghaf.networking.hosts."${vm.name}-vm") cid;
+  guivmCID = config.ghaf.networking.hosts.gui-vm.cid;
+  waypipePort = configHost.ghaf.virtualization.microvm.appvm.waypipeBasePort + cid;
   waypipeBorder = lib.optionalString (
     cfg.waypipeBorder && vm.borderColor != null
   ) "--border \"${vm.borderColor}\"";
@@ -35,7 +35,6 @@ let
     in
     pkgs.writeScriptBin "run-waypipe" script;
   vsockproxy = pkgs.callPackage ../../../../../packages/vsockproxy { };
-  guivmCID = configHost.ghaf.virtualization.microvm.guivm.vsockCID;
 in
 {
   options.ghaf.waypipe = with lib; {

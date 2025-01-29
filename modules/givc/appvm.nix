@@ -13,6 +13,8 @@ let
     mkEnableOption
     mkIf
     types
+    head
+    filter
     ;
   inherit (config.ghaf.networking) hosts;
   inherit (config.networking) hostName;
@@ -40,7 +42,7 @@ in
       };
       inherit (cfg) applications;
       tls.enable = config.ghaf.givc.enableTls;
-      admin = lib.head config.ghaf.givc.adminConfig.addresses;
+      admin = head (filter (entry: entry.protocol == "tcp") config.ghaf.givc.adminConfig.addresses);
     };
   };
 }
