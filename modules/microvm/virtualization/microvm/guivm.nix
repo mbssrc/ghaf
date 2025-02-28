@@ -126,23 +126,31 @@ let
             xdgitems.enable = true;
           };
 
+          # hardware.nvidiaOptimus.disable = true;
           hardware = {
-
-            graphics = {
-              enable = true;
+            graphics.enable = true;
+            nvidia = {
+              modesetting.enable = true;
+              powerManagement.enable = false;
+              powerManagement.finegrained = false;
+              forceFullCompositionPipeline = true;
+              open = true;
+              # open = false;
+              nvidiaSettings = true;
+              package = config.boot.kernelPackages.nvidiaPackages.latest;
+              prime = {
+                intelBusId = "PCI:0:11:0";
+                nvidiaBusId = "PCI:0:13:0";
+                offload.enable = lib.mkForce true;
+                # offload.enableOffloadCmd = lib.mkForce true;
+                # sync.enable = lib.mkForce true;
+              };
             };
-
-            # nvidia = {
-            #   modesetting.enable = true;
-            #   powerManagement.enable = false;
-            #   powerManagement.finegrained = false;
-            #   open = false;
-            #   nvidiaSettings = true;
-            #   #package = config.boot.kernelPackages.nvidiaPackages.latest;
-            # };
           };
+          boot.kernelPackages = lib.mkForce pkgs.linuxPackages_6_12;
+          boot.extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
 
-          #Load nvidia driver for Xorg and Wayland
+          # # Load nvidia driver for Xorg and Wayland
           services.xserver.videoDrivers = [ "nvidia" ];
 
           services = {
@@ -369,12 +377,12 @@ in
 
         # We need this patch to avoid reserving Intel graphics stolen memory for vm
         # https://gitlab.freedesktop.org/drm/i915/kernel/-/issues/12103
-        boot.kernelPatches = [
-          {
-            name = "gpu-passthrough-fix";
-            patch = ./0001-x86-gpu-Don-t-reserve-stolen-memory-for-GPU-passthro.patch;
-          }
-        ];
+        # boot.kernelPatches = [
+        #   {
+        #     name = "gpu-passthrough-fix";
+        #     patch = ./0001-x86-gpu-Don-t-reserve-stolen-memory-for-GPU-passthro.patch;
+        #   }
+        # ];
 
         imports = guivmBaseConfiguration.imports ++ cfg.extraModules;
       };

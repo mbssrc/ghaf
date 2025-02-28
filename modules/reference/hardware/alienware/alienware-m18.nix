@@ -17,11 +17,7 @@
       "acpi_backlight=vendor"
       "acpi_osi=linux"
       #l"module_blacklist=i2c_i801,i915,iwlwifi,nouveau,nvidiafb,snd_hda_intel,snd_soc_avs,snd_sof_pci_intel_tgl,spi_intel_pci,xe"
-      "module_blacklist=i915,iwlwifi,nouveau,nvidiafb,xe"
-      "softdep"
-      "nvidia"
-      "pre:"
-      "vfio-pci"
+      "module_blacklist=i915,iwlwifi,nouveau,nvidia,nvidiafb,xe"
     ];
   };
 
@@ -29,11 +25,11 @@
   input = {
     keyboard = {
       name = [
-        # "AT Translated Set 2 keyboard"
+        "AT Translated Set 2 keyboard"
         # "DELL Technologies Keyboard"
       ];
       evdev = [
-        #"/dev/keyboard0"
+        "/dev/keyboard0"
         #"/dev/keyboard1"
       ];
     };
@@ -41,20 +37,20 @@
     mouse = {
       name = [
         #"VEN_04F3:00 04F3:328A Mouse"
-        # "PS/2 Generic Mouse"
+        "PS/2 Generic Mouse"
       ];
       evdev = [
-        #"/dev/mouse0"
+        "/dev/mouse0"
         #"/dev/mouse1"
       ];
     };
 
     touchpad = {
       name = [
-        #"VEN_04F3:00 04F3:328A Touchpad"
+        "VEN_04F3:00 04F3:328A Touchpad"
       ];
       evdev = [
-        #"/dev/touchpad0"
+        "/dev/touchpad0"
       ];
     };
 
@@ -80,21 +76,20 @@
         # Network controller: Intel Corporation Wi-Fi 7(802.11be) AX1775*/AX1790*/BE20*/BE401/BE1750* 2x2 (rev 1a)
         name = "wlp0s5f0";
         path = "0000:6d:00.0";
-        v
-          endorId = "8086";
+        vendorId = "8086";
         productId = "272b";
         # Detected kernel driver: iwlwifi
         # Detected kernel modules: iwlwifi
       }
-      # {
-      #   # Ethernet controller: Realtek Semiconductor Co., Ltd. Device 5000 (rev 02)
-      #   name = "eth0";
-      #   path = "0000:6f:00.0";
-      #   vendorId = "10ec";
-      #   productId = "5000";
-      #   # Detected kernel driver:
-      #   # Detected kernel modules:
-      # }
+      {
+        # Ethernet controller: Realtek Semiconductor Co., Ltd. Device 5000 (rev 02)
+        name = "eth0";
+        path = "0000:6f:00.0";
+        vendorId = "10ec";
+        productId = "5000";
+        # Detected kernel driver:
+        # Detected kernel modules:
+      }
     ];
     kernelConfig = {
       # Kernel modules are indicative only, please investigate with lsmod/modinfo
@@ -109,40 +104,43 @@
   # GPU devices for passthrough to guivm
   gpu = {
     pciDevices = [
-      # {
-      #   # VGA compatible controller: NVIDIA Corporation AD103M / GN21-X11 [GeForce RTX 4090 Laptop GPU] (rev a1)
-      #   name = "gpu0-0";
-      #   path = "0000:02:00.0";
-      #   vendorId = "8086";
-      #   productId = "a788";
-      #   # Detected kernel driver: nouveau
-      #   # Detected kernel modules: nvidiafb,nouveau
-      # }
       {
-        # graphics device: NVIDIA Corporation Device 22bb (rev a1)
+        # VGA compatible controller [0300]: Intel Corporation Raptor Lake-S UHD Graphics [8086:a788] (rev 04)
+        name = "gpu0-0";
+        path = "0000:00:02.0";
+        vendorId = "8086";
+        productId = "a788";
+        # Detected kernel driver: nouveau
+        # Detected kernel modules: nvidiafb,nouveau
+      }
+      {
+        # Communication controller [0780]: Intel Corporation Raptor Lake CSME HECI #1 [8086:7a68] (rev 11)
+        path = "0000:00:16.0";
+        vendorId = "8086";
+        productId = "7a68";
+      }
+      {
+        # VGA compatible controller: NVIDIA Corporation AD103M / GN21-X11 [GeForce RTX 4090 Laptop GPU] (rev a1)
         name = "gpu1-0";
         path = "0000:01:00.0";
         vendorId = "10de";
         productId = "2757";
-        # Detected kernel driver: snd_hda_intel
-        # Detected kernel modules: snd_hda_intel
       }
       {
-        # graphics device: NVIDIA Corporation Device 22bb (rev a1)
+        # Audio device [0403]: NVIDIA Corporation Device [10de:22bb] (rev a1)
         name = "gpu1-1";
         path = "0000:01:00.1";
         vendorId = "10de";
         productId = "22bb";
-        # Detected kernel driver: snd_hda_intel
-        # Detected kernel modules: snd_hda_intel
       }
     ];
     kernelConfig = {
       # Kernel modules are indicative only, please investigate with lsmod/modinfo
       stage1.kernelModules = [
-        #"nouveau"
-        #"nvidiafb"
-        #"snd_hda_intel"
+        "i915"
+        "xe"
+        "nvidia"
+        "snd_hda_intel"
       ];
       stage2.kernelModules = [ ];
       kernelParams = [

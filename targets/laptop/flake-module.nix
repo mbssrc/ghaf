@@ -69,7 +69,7 @@ let
         };
       }
     ])
-     (laptop-configuration "alienware-m18" "debug" [
+    (laptop-configuration "alienware-m18" "debug" [
       self.nixosModules.disko-ab-partitions-v1
       {
         ghaf = {
