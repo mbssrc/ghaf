@@ -5,8 +5,6 @@ let
   cfg = config.ghaf.reference.profiles.mvp-user-trial-extras;
 in
 {
-  imports = [ ./mvp-user-trial.nix ];
-
   options.ghaf.reference.profiles.mvp-user-trial-extras = {
     enable = lib.mkEnableOption "Enable the mvp configuration for apps and services";
   };

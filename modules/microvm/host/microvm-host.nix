@@ -22,9 +22,11 @@ let
 in
 {
   imports = [
+    inputs.microvm.nixosModules.host
     inputs.impermanence.nixosModules.impermanence
     inputs.self.nixosModules.givc
     ./networking.nix
+    ./shared-mem.nix
   ];
 
   options.ghaf.virtualization.microvm-host = {
