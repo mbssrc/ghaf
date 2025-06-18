@@ -13,6 +13,8 @@ let
     mkIf
     types
     hasAttr
+    concatStringsSep
+    mapAttrsToList
     ;
   inherit (config.ghaf.networking) hosts;
 
@@ -55,6 +57,7 @@ in
         enable = true;
         internalInterfaces = [ cfg.interfaceName ];
       };
+      interfaces.${cfg.interfaceName}.useDHCP = false;
     };
 
     microvm.interfaces = [
@@ -78,6 +81,13 @@ in
         addresses = [ { Address = "${hosts.${cfg.vmName}.ipv4}/24"; } ];
         linkConfig.RequiredForOnline = "routable";
         linkConfig.ActivationPolicy = "always-up";
+        extraConfig = concatStringsSep "\n" (
+          mapAttrsToList (_: entry: ''
+            [Neighbor]
+            Address=${entry.ipv4}
+            LinkLayerAddress=${entry.mac}
+          '') hosts
+        );
       } // lib.optionalAttrs ((!cfg.isGateway) || (cfg.vmName == "ids-vm")) { inherit gateway; };
     };
 

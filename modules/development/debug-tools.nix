@@ -36,6 +36,7 @@ in
         pkgs.usbutils
         # Useful in NetVM
         pkgs.ethtool
+        pkgs.bettercap
         # Basic monitors
         pkgs.iftop
         pkgs.iotop
