@@ -32,6 +32,7 @@ in
           zathura.enable = true;
           comms.enable = true;
           business.enable = true;
+          flatpak.enable = true;
         };
       };
 
