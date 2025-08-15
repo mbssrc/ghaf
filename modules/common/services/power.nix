@@ -172,6 +172,13 @@ let
           esac
         ;;
 
+      powerstates)
+        echo "GPU power state: $(cat /sys/bus/pci/devices/0000:00:02.0/power_state)"
+        echo "NIC power state: $(cat /sys/bus/pci/devices/0000:00:14.3/power_state)"
+        echo "SND power state: $(cat /sys/bus/pci/devices/0000:00:1f.3/power_state)"
+        echo "SMBus power state: $(cat /sys/bus/pci/devices/0000:00:1f.4/power_state)"
+        echo "Serial bus controller power state: $(cat /sys/bus/pci/devices/0000:00:1f.5/power_state)"
+        ;;
       *)
         echo "Invalid action: $suspend_action"
         echo "Usage: $0 <VM Name> <suspend-action> (suspend|resume)"
@@ -538,40 +545,44 @@ in
         };
       };
 
-      systemd.services = optionalAttrs cfg.allowSuspend (
-        listToAttrs (
-          flatten (
-            map
-              (suspendAction: [
-                (nameValuePair "pre-sleep-${suspendAction}@" {
-                  description = "pre-sleep ${suspendAction} action for '%i'";
-                  partOf = [ "pre-sleep-actions.target" ];
-                  before = [ "sleep.target" ];
-                  after = optionals (suspendAction == "pci-suspend") [ "pre-sleep-fake-suspend@%i.service" ];
-                  serviceConfig = {
-                    Type = "oneshot";
-                    ExecStart = "${getExe host-suspend-actions} %i ${suspendAction} suspend";
-                  };
-                })
-                (nameValuePair "post-resume-${suspendAction}@" {
-                  description = "post-resume ${suspendAction} action for '%i'";
-                  partOf = [ "post-resume-actions.target" ];
-                  after = [ "suspend.target" ];
-                  before = optionals (suspendAction == "pci-suspend") [ "post-resume-fake-suspend@%i.service" ];
-                  serviceConfig = {
-                    Type = "oneshot";
-                    ExecStart = "${getExe host-suspend-actions} %i ${suspendAction} resume";
-                  };
-                })
-              ])
-              [
-                "poweroff"
-                "fake-suspend"
-                "pci-suspend"
-              ]
+      systemd.services =
+        optionalAttrs cfg.allowSuspend (
+          listToAttrs (
+            flatten (
+              map
+                (suspendAction: [
+                  (nameValuePair "pre-sleep-${suspendAction}@" {
+                    description = "pre-sleep ${suspendAction} action for '%i'";
+                    partOf = [ "pre-sleep-actions.target" ];
+                    before = [ "sleep.target" ];
+                    after = optionals (suspendAction == "pci-suspend") [ "pre-sleep-fake-suspend@%i.service" ];
+                    serviceConfig = {
+                      Type = "oneshot";
+                      ExecStart = "${getExe host-suspend-actions} %i ${suspendAction} suspend";
+                    };
+                  })
+                  (nameValuePair "post-resume-${suspendAction}@" {
+                    description = "post-resume ${suspendAction} action for '%i'";
+                    partOf = [ "post-resume-actions.target" ];
+                    after = [ "suspend.target" ];
+                    before = optionals (suspendAction == "pci-suspend") [ "post-resume-fake-suspend@%i.service" ];
+                    serviceConfig = {
+                      Type = "oneshot";
+                      ExecStart = "${getExe host-suspend-actions} %i ${suspendAction} resume";
+                    };
+                  })
+                ])
+                [
+                  "poweroff"
+                  "fake-suspend"
+                  "pci-suspend"
+                ]
+            )
           )
         )
-      );
+        // {
+          systemd-suspend.serviceConfig.ExecStartPost = "${getExe host-suspend-actions} none powerstates none none";
+        };
 
       # Power management services
       # TODO Evaluate these services
