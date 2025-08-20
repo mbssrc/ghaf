@@ -65,11 +65,14 @@ let
               audio.enable = true;
               power-manager.vm = {
                 enable = true;
-                pciSuspendServices = [
-                  "pipewire.socket"
-                  "pipewire.service"
-                  "bluetooth.service"
-                ];
+                pciSuspend = false;
+                powerOffOnSuspend = true;
+                # pciSuspendServices = [
+                #   "wireplumber.service"
+                #   "pipewire.socket"
+                #   "pipewire.service"
+                #   "bluetooth.service"
+                # ];
               };
             };
             logging.client.enable = configHost.ghaf.logging.enable;
