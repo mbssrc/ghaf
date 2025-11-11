@@ -24,7 +24,7 @@ let
         };
         modules = [
           (
-            { pkgs, modulesPath, ... }:
+            { modulesPath, ... }:
             {
               imports = [
                 "${toString modulesPath}/installer/cd-dvd/installation-cd-minimal.nix"
@@ -57,10 +57,7 @@ let
 
               isoImage.squashfsCompression = "zstd -Xcompression-level 3";
 
-              # NOTE: Stop nixos complains about "warning:
-              # mdadm: Neither MAILADDR nor PROGRAM has been set. This will cause the `mdmon` service to crash."
-              # https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/profiles/installation-device.nix#L112
-              boot.swraid.mdadmConf = "PROGRAM ${pkgs.coreutils}/bin/true";
+              boot.swraid.enable = false;
 
               # Configure nixpkgs with Ghaf overlays for extended lib support
               nixpkgs = {
