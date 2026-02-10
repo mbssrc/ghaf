@@ -31,5 +31,11 @@
       ./profiles/mvp-orinuser-trial.nix
       ./profiles/mvp-orinuser-trial-extras.nix
     ];
+    reference-profiles-thor.imports = [
+      inputs.self.nixosModules.reference-programs
+      inputs.self.nixosModules.reference-services
+      inputs.self.nixosModules.reference-personalize
+      ./profiles/mvp-thoruser-trial.nix
+    ];
   };
 }

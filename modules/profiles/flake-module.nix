@@ -33,5 +33,10 @@
       inputs.self.nixosModules.microvm
       ./orin.nix
     ];
+
+    profiles-thor.imports = [
+      inputs.self.nixosModules.profiles
+      ./thor.nix
+    ];
   };
 }
