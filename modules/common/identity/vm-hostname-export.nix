@@ -23,7 +23,7 @@ in
     enable = mkEnableOption "export dynamic hostname to VM environment";
     hostnamePath = mkOption {
       type = types.str;
-      default = "/etc/common/ghaf/hostname";
+      default = "/etc/identity/ghaf/hostname";
       description = "Path to hostname file in VM (usually shared via virtiofs)";
     };
   };

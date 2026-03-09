@@ -24,7 +24,7 @@ in
     enable = mkEnableOption "set VM hostname from shared hardware-based hostname file";
     hostnamePath = mkOption {
       type = types.str;
-      default = "/etc/common/ghaf/hostname";
+      default = "/etc/identity/ghaf/hostname";
       description = "Path to hostname file in VM (usually shared via virtiofs)";
     };
   };

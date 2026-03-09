@@ -8,7 +8,6 @@
 }:
 let
   cfg = config.ghaf.xdghandlers;
-  inherit (config.ghaf.xdgitems) xdgHostRoot;
 
   # A script for opening PDF files launched by GIVC from AppVMs
   xdgOpenPdf = pkgs.writeShellApplication {
@@ -126,40 +125,7 @@ in
         args = [ "url" ];
       });
 
-    # Set up MicroVM shares for each MIME type and mount them to /run/xdg
-    # These shares are also passed to the AppVMs where XDG items are enabled
-    microvm.shares =
-      (lib.optional cfg.pdf {
-        tag = "xdgshare-pdf";
-        proto = "virtiofs";
-        securityModel = "passthrough";
-        source = "${xdgHostRoot}/pdf";
-        mountPoint = "/run/xdg/pdf";
-      })
-      ++ (lib.optional cfg.image {
-        tag = "xdgshare-image";
-        proto = "virtiofs";
-        securityModel = "passthrough";
-        source = "${xdgHostRoot}/image";
-        mountPoint = "/run/xdg/image";
-      });
-
-    fileSystems =
-      (lib.optionalAttrs cfg.pdf {
-        "/run/xdg/pdf".options = [
-          "rw"
-          "nodev"
-          "nosuid"
-          "noexec"
-        ];
-      })
-      // (lib.optionalAttrs cfg.image {
-        "/run/xdg/image".options = [
-          "rw"
-          "nodev"
-          "nosuid"
-          "noexec"
-        ];
-      });
+    # XDG shares are now handled by the channels system (ghaf.storage.channels.xdg)
+    # which creates virtiofs mounts at /run/xdg for all XDG-enabled VMs
   };
 }

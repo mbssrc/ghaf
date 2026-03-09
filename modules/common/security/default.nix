@@ -12,5 +12,6 @@
     ./ssh-tarpit
     ./fleet
     ../../secureboot/secureboot.nix
+    ./clamav.nix
   ];
 }
