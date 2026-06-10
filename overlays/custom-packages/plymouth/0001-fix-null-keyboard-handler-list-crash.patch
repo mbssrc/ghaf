@@ -1,0 +1,30 @@
+From: Manuel Bluhm <mbssrc@ssrc.tii.ae>
+Subject: [PATCH] script plugin: fix use-after-free crash on keyboard teardown
+
+When the keyboard device is removed during boot (e.g. PCI passthrough
+to a VM), the device manager frees the keyboard struct while the script
+plugin still holds a stale pointer. Skip the unsafe handler removal and
+just null the pointer — the device manager already handles cleanup.
+
+---
+ src/plugins/splash/script/plugin.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+diff --git a/src/plugins/splash/script/plugin.c b/src/plugins/splash/script/plugin.c
+index 1234567..abcdefg 100644
+--- a/src/plugins/splash/script/plugin.c
++++ b/src/plugins/splash/script/plugin.c
+@@ -393,12 +393,7 @@ stop_script_animation (ply_boot_splash_plugin_t *plugin)
+                                                           (ply_event_loop_timeout_handler_t)
+                                                           on_timeout, plugin);
+
+-        if (plugin->keyboard != NULL) {
+-                ply_keyboard_remove_input_handler (plugin->keyboard,
+-                                                   (ply_keyboard_input_handler_t)
+-                                                   on_keyboard_input);
+-                plugin->keyboard = NULL;
+-        }
++        plugin->keyboard = NULL;
+
+         script_state_destroy (plugin->script_state);
+         script_lib_sprite_destroy (plugin->script_sprite_lib);

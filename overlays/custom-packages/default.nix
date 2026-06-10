@@ -19,6 +19,7 @@
   grafana-alloy = import ./grafana-alloy { inherit prev; };
   intel-gpu-tools = import ./intel-gpu-tools { inherit prev; };
   oculante = import ./oculante { inherit prev; };
+  plymouth = import ./plymouth { inherit prev; };
   osquery-with-hostname = import ./osquery-with-hostname { inherit prev; };
   pipewire = import ./pipewire { inherit prev; };
   spire4ghaf = import ./spire4ghaf { inherit prev; };

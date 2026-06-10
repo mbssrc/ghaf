@@ -25,9 +25,9 @@ let
         # bgrt theme uses spinner theme's image directory
         # so no need to adjust bgrt theme separately
         mkdir -p $out/share/plymouth/themes/spinner
-        # Resize the image to a height of 200px, keeping aspect ratio
+        # Resize the image to the configured height, keeping aspect ratio
         magick convert "${cfg.firmwareLogo.image}" \
-          -background transparent -resize x200 \
+          -background transparent -resize x${toString cfg.firmwareLogo.height} \
           $out/share/plymouth/themes/spinner/bgrt-fallback.png
       fi
     ''
@@ -64,6 +64,7 @@ in
         "details"
         "fade-in"
         "glow"
+        "reem-boot"
         "script"
         "solar"
         "spinfinity"
@@ -92,6 +93,14 @@ in
         description = ''
           Image to use in place of the UEFI firmware (BGRT) boot logo.
           Default is the Ghaf logo.
+        '';
+      };
+
+      height = mkOption {
+        type = types.int;
+        default = 200;
+        description = ''
+          Height in pixels to resize the firmware logo to. Aspect ratio is preserved.
         '';
       };
     };
@@ -151,12 +160,16 @@ in
 
         # This is a bit hacky, as we're overriding the default spinner theme
         # It would be better to create our own custom theme
-        themePackages = optionals cfg.firmwareLogo.enable [ plymouth-ghaf-background ];
+        themePackages =
+          optionals cfg.firmwareLogo.enable [ plymouth-ghaf-background ]
+          ++ optionals (cfg.theme == "reem-boot") [ pkgs.plymouth-reem-boot ];
       };
       # Hide boot log from user completely
       kernelParams = [
         "quiet"
         "udev.log_priority=3"
+        "systemd.show_status=false"
+        "vt.global_cursor_default=0"
       ]
       ++ optionals cfg.debug [ "plymouth.debug" ]
       # Disables loading the UEFI logo from firmware to /sys/firmware/acpi/bgrt

@@ -41,6 +41,19 @@
       # Propagate host storeOnDisk setting to global-config for VMs
       storage.storeOnDisk = lib.mkIf config.ghaf.virtualization.microvm.storeOnDisk true;
 
+      # Propagate boot logo settings from host to VMs
+      graphics.boot = lib.mkIf config.ghaf.graphics.boot.enable {
+        theme = lib.mkDefault config.ghaf.graphics.boot.theme;
+        firmwareLogo = {
+          image = lib.mkDefault config.ghaf.graphics.boot.firmwareLogo.image;
+          height = lib.mkDefault config.ghaf.graphics.boot.firmwareLogo.height;
+        };
+        logo = {
+          enable = lib.mkDefault config.ghaf.graphics.boot.logo.enable;
+          image = lib.mkDefault config.ghaf.graphics.boot.logo.image;
+        };
+      };
+
       # Auto-populate logging listener address from admin-vm IP
       # The logging listener always runs on admin-vm, so derive the address
       # from hosts.nix rather than requiring each profile to set it manually.
