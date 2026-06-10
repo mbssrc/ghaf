@@ -110,7 +110,43 @@ rec {
       };
 
       # Graphics/boot UI settings
-      graphics.boot.enable = mkEnableOption "graphical boot support (splash screen, user login detection)";
+      graphics.boot = {
+        enable = mkEnableOption "graphical boot support (splash screen, user login detection)";
+
+        theme = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          description = "Plymouth theme to use. Propagated to VMs.";
+        };
+
+        firmwareLogo = {
+          image = mkOption {
+            type = types.nullOr types.path;
+            default = null;
+            description = "Image to use as the firmware (BGRT) boot logo. Propagated to VMs.";
+          };
+
+          height = mkOption {
+            type = types.nullOr types.int;
+            default = null;
+            description = "Height in pixels to resize the firmware logo to. Propagated to VMs.";
+          };
+        };
+
+        logo = {
+          enable = mkOption {
+            type = types.bool;
+            default = false;
+            description = "Whether to show a custom logo at the bottom of the splash screen.";
+          };
+
+          image = mkOption {
+            type = types.nullOr types.path;
+            default = null;
+            description = "Image for the bottom splash logo. Propagated to VMs.";
+          };
+        };
+      };
 
       # IDS VM specific settings
       idsvm.mitmproxy.enable = mkEnableOption "MITM proxy in IDS VM for traffic inspection";

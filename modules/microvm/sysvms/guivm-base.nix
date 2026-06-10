@@ -182,6 +182,21 @@ in
       boot = {
         enable = true;
         renderer = "gpu";
+        theme = lib.mkIf (
+          (globalConfig.graphics.boot.theme or null) != null
+        ) globalConfig.graphics.boot.theme;
+        firmwareLogo = {
+          image = lib.mkIf (
+            (globalConfig.graphics.boot.firmwareLogo.image or null) != null
+          ) globalConfig.graphics.boot.firmwareLogo.image;
+          height = lib.mkIf (
+            (globalConfig.graphics.boot.firmwareLogo.height or null) != null
+          ) globalConfig.graphics.boot.firmwareLogo.height;
+        };
+        logo = lib.mkIf (globalConfig.graphics.boot.logo.enable or false) {
+          enable = true;
+          image = globalConfig.graphics.boot.logo.image;
+        };
       };
 
       launchers =

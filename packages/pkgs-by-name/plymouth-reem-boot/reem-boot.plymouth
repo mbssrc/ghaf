@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Reem Boot
+Description=Reem logo with a top-to-bottom fade-in reveal
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/reem-boot
+ScriptFile=/usr/share/plymouth/themes/reem-boot/reem-boot.script

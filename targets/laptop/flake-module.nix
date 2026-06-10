@@ -313,6 +313,11 @@ let
             };
           }
         ];
+
+        graphics.boot = {
+          enable = true;
+          theme = "reem-boot";
+        };
       };
     })
 

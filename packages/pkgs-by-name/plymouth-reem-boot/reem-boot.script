@@ -1,0 +1,102 @@
+# =============================================================================
+#  reem-boot  -  Plymouth "script" theme
+#
+#  Plays a baked top-to-bottom fade-in reveal of the Reem logo, once, then
+#  holds the fully-revealed logo for the rest of boot. The reveal is a
+#  per-pixel soft vertical wipe (frames in animation/frame-N.png).
+#
+# =============================================================================
+
+# ------------------------------------------------------------------ background
+Window.SetBackgroundTopColor(0.0, 0.0, 0.0);
+Window.SetBackgroundBottomColor(0.0, 0.0, 0.0);
+
+screen.w  = Window.GetWidth();
+screen.h  = Window.GetHeight();
+screen.cx = screen.w / 2;
+screen.cy = screen.h / 2;
+
+# --------------------------------------------------------- load reveal frames
+anim.first      = 0;
+anim.last       = 35;     # number of frames is anim.last + 1
+anim.hold_ticks = 2;      # refresh ticks shown per frame (bigger = slower)
+
+for (i = anim.first; i <= anim.last; i++)
+    anim.image[i] = Image("animation/frame-" + i + ".png");
+
+# --------------------------------------------------------------- title sprite
+anim.w = anim.image[anim.first].GetWidth();
+anim.h = anim.image[anim.first].GetHeight();
+
+title.image = Image("title.png");
+title.gap   = 30;                     # gap between logo and title
+
+# Center the logo + title group vertically, shifted up slightly
+group.h = anim.h + title.gap + title.image.GetHeight();
+group.y = screen.cy - group.h / 2 - screen.h * 0.05;
+
+anim.x = screen.cx - anim.w / 2;
+anim.y = group.y;
+
+anim.sprite = Sprite();
+anim.sprite.SetX(anim.x);
+anim.sprite.SetY(anim.y);
+anim.sprite.SetZ(10);
+anim.sprite.SetImage(anim.image[anim.first]);
+
+title.sprite = Sprite();
+title.sprite.SetX(screen.cx - title.image.GetWidth() / 2);
+title.sprite.SetY(anim.y + anim.h + title.gap);
+title.sprite.SetZ(10);
+title.sprite.SetOpacity(0);           # hidden until reveal finishes
+
+title.fade_speed = 0.04;              # how fast the title fades in
+title.opacity    = 0;
+
+# ------------------------------------------------------------- animation loop
+state.tick  = 0;
+state.frame = -1;       # track last displayed frame to avoid redundant SetImage
+state.done  = 0;        # 1 once reveal + title fade are complete
+
+fun refresh() {
+    if (state.done)
+        return;
+
+    state.tick++;
+    frame = Math.Int(state.tick / anim.hold_ticks);
+    if (frame > anim.last)
+        frame = anim.last;
+
+    # Only update sprite when the frame actually changes
+    if (frame != state.frame) {
+        anim.sprite.SetImage(anim.image[frame]);
+        state.frame = frame;
+    }
+
+    # After reveal: fade in the title, then stop refreshing
+    if (frame == anim.last) {
+        if (title.opacity < 1) {
+            title.opacity = title.opacity + title.fade_speed;
+            if (title.opacity >= 1)
+                title.opacity = 1;
+            title.sprite.SetImage(title.image);
+            title.sprite.SetOpacity(title.opacity);
+        } else {
+            state.done = 1;
+        }
+    }
+}
+Plymouth.SetRefreshFunction(refresh);
+
+# ------------------------------------------------- suppress all text output
+# Do not register SetDisplayPasswordFunction — it causes Plymouth to set up
+# keyboard input handlers that crash during teardown in VMs without a keyboard
+# device. If LUKS needs a passphrase, Plymouth falls back to text mode.
+fun display_message(text) { }
+Plymouth.SetDisplayMessageFunction(display_message);
+
+fun hide_message(text) { }
+Plymouth.SetHideMessageFunction(hide_message);
+
+fun boot_progress(duration, progress) { }
+Plymouth.SetBootProgressFunction(boot_progress);
